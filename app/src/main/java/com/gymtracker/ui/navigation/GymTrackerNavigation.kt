@@ -1,6 +1,23 @@
 package com.gymtracker.ui.navigation
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.outlined.List
@@ -11,15 +28,24 @@ import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.FitnessCenter
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.gymtracker.ui.theme.Background
+import com.gymtracker.ui.theme.Primary
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -255,29 +281,135 @@ private fun GymTrackerBottomBar(navController: NavHostController) {
     )
     if (hideOnRoutes.any { currentDestination?.route?.contains(it) == true }) return
 
-    NavigationBar {
-        bottomNavItems.forEach { screen ->
-            val selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
-
-            NavigationBarItem(
-                icon = {
-                    Icon(
-                        imageVector = if (selected) screen.selectedIcon else screen.unselectedIcon,
-                        contentDescription = screen.title
-                    )
-                },
-                label = { Text(screen.title) },
-                selected = selected,
-                onClick = {
-                    navController.navigate(screen.route) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
+    FloatingGlassNavBar(
+        items = bottomNavItems,
+        currentRoute = currentDestination?.route,
+        onItemClick = { screen ->
+            navController.navigate(screen.route) {
+                popUpTo(navController.graph.findStartDestination().id) {
+                    saveState = true
                 }
+                launchSingleTop = true
+                restoreState = true
+            }
+        }
+    )
+}
+
+@Composable
+private fun FloatingGlassNavBar(
+    items: List<Screen>,
+    currentRoute: String?,
+    onItemClick: (Screen) -> Unit
+) {
+    val shape = RoundedCornerShape(28.dp)
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Background)
+            .padding(horizontal = 20.dp, vertical = 16.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(shape)
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFF1E1A3D),
+                            Color(0xFF151030)
+                        )
+                    )
+                )
+                .border(
+                    width = 1.dp,
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFF4A4570).copy(alpha = 0.6f),
+                            Color(0xFF2A2550).copy(alpha = 0.3f)
+                        )
+                    ),
+                    shape = shape
+                )
+                .padding(horizontal = 8.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            items.forEach { screen ->
+                val selected = currentRoute == screen.route
+
+                FloatingNavItem(
+                    screen = screen,
+                    selected = selected,
+                    onClick = { onItemClick(screen) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun FloatingNavItem(
+    screen: Screen,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    val scale by animateFloatAsState(
+        targetValue = if (selected) 1.1f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "scale"
+    )
+
+    val iconColor by animateColorAsState(
+        targetValue = if (selected) Primary else Color.White.copy(alpha = 0.5f),
+        label = "iconColor"
+    )
+
+    val textColor by animateColorAsState(
+        targetValue = if (selected) Primary else Color.White.copy(alpha = 0.4f),
+        label = "textColor"
+    )
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick
             )
+            .padding(horizontal = 12.dp, vertical = 4.dp)
+            .scale(scale)
+    ) {
+        Icon(
+            imageVector = if (selected) screen.selectedIcon else screen.unselectedIcon,
+            contentDescription = screen.title,
+            tint = iconColor,
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = screen.title,
+            fontSize = 11.sp,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+            color = textColor
+        )
+
+        // Indicator dot
+        if (selected) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Box(
+                modifier = Modifier
+                    .size(4.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(Primary)
+            )
+        } else {
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }

@@ -1,5 +1,7 @@
 package com.gymtracker.ui.screens.exercises
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,34 +19,36 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gymtracker.domain.model.Exercise
 import com.gymtracker.domain.model.ExerciseCategory
+import com.gymtracker.ui.components.IconBadge
+import com.gymtracker.ui.theme.Background
+import com.gymtracker.ui.theme.Primary
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExercisesScreen(
     onExerciseClick: (Exercise) -> Unit = {},
@@ -54,47 +58,40 @@ fun ExercisesScreen(
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val selectedCategory by viewModel.selectedCategory.collectAsStateWithLifecycle()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Exercises") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Background)
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Header
+            Text(
+                text = "Exercises",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                modifier = Modifier.padding(start = 20.dp, top = 16.dp, bottom = 16.dp)
             )
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
+
             // Search bar
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = viewModel::onSearchQueryChange,
+            PremiumSearchBar(
+                query = searchQuery,
+                onQueryChange = viewModel::onSearchQueryChange,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                placeholder = { Text("Search exercises...") },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Search"
-                    )
-                },
-                singleLine = true
+                    .padding(horizontal = 20.dp)
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Category filter chips
             CategoryFilterChips(
                 selectedCategory = selectedCategory,
                 onCategorySelect = viewModel::onCategorySelect,
-                modifier = Modifier.padding(horizontal = 16.dp)
+                modifier = Modifier.padding(horizontal = 20.dp)
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Content
             when {
@@ -103,7 +100,7 @@ fun ExercisesScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator()
+                        CircularProgressIndicator(color = Primary)
                     }
                 }
                 uiState.exercises.isEmpty() -> {
@@ -111,11 +108,20 @@ fun ExercisesScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "No exercises found",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                imageVector = Icons.Default.FitnessCenter,
+                                contentDescription = null,
+                                tint = Color.White.copy(alpha = 0.3f),
+                                modifier = Modifier.size(64.dp)
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "No exercises found",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = Color.White.copy(alpha = 0.6f)
+                            )
+                        }
                     }
                 }
                 else -> {
@@ -124,6 +130,60 @@ fun ExercisesScreen(
                         onExerciseClick = onExerciseClick
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PremiumSearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val shape = RoundedCornerShape(16.dp)
+
+    Box(
+        modifier = modifier
+            .clip(shape)
+            .background(Color(0xFF1E1A3D))
+            .border(
+                width = 1.dp,
+                color = Color(0xFF3A3560).copy(alpha = 0.5f),
+                shape = shape
+            )
+            .padding(horizontal = 16.dp, vertical = 14.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = "Search",
+                tint = Color.White.copy(alpha = 0.5f),
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Box(modifier = Modifier.weight(1f)) {
+                if (query.isEmpty()) {
+                    Text(
+                        text = "Search exercises...",
+                        color = Color.White.copy(alpha = 0.4f),
+                        fontSize = 16.sp
+                    )
+                }
+                BasicTextField(
+                    value = query,
+                    onValueChange = onQueryChange,
+                    textStyle = TextStyle(
+                        color = Color.White,
+                        fontSize = 16.sp
+                    ),
+                    singleLine = true,
+                    cursorBrush = SolidColor(Primary),
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
     }
@@ -138,20 +198,46 @@ private fun CategoryFilterChips(
 ) {
     FlowRow(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        FilterChip(
+        PremiumChip(
+            text = "All",
             selected = selectedCategory == null,
-            onClick = { onCategorySelect(null) },
-            label = { Text("All") }
+            onClick = { onCategorySelect(null) }
         )
         ExerciseCategory.entries.forEach { category ->
-            FilterChip(
+            PremiumChip(
+                text = category.displayName,
                 selected = selectedCategory == category,
-                onClick = { onCategorySelect(category) },
-                label = { Text(category.displayName) }
+                onClick = { onCategorySelect(category) }
             )
         }
+    }
+}
+
+@Composable
+private fun PremiumChip(
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    val shape = RoundedCornerShape(12.dp)
+    val backgroundColor = if (selected) Primary else Color(0xFF2A2555)
+    val textColor = if (selected) Color.White else Color.White.copy(alpha = 0.7f)
+
+    Surface(
+        shape = shape,
+        color = backgroundColor,
+        modifier = Modifier.clickable(onClick = onClick)
+    ) {
+        Text(
+            text = text,
+            color = textColor,
+            fontSize = 14.sp,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+        )
     }
 }
 
@@ -161,83 +247,91 @@ private fun ExercisesList(
     onExerciseClick: (Exercise) -> Unit
 ) {
     LazyColumn(
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         groupedExercises.forEach { (category, exercises) ->
             item {
                 Text(
                     text = category.displayName,
-                    style = MaterialTheme.typography.titleMedium,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = Primary,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
             items(exercises, key = { it.id }) { exercise ->
-                ExerciseCard(
+                PremiumExerciseCard(
                     exercise = exercise,
                     onClick = { onExerciseClick(exercise) }
                 )
             }
         }
+
+        // Bottom spacing for nav bar
+        item {
+            Spacer(modifier = Modifier.height(80.dp))
+        }
     }
 }
 
 @Composable
-private fun ExerciseCard(
+private fun PremiumExerciseCard(
     exercise: Exercise,
     onClick: () -> Unit
 ) {
-    Card(
+    val cardShape = RoundedCornerShape(16.dp)
+
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Surface(
-                shape = MaterialTheme.shapes.medium,
-                color = MaterialTheme.colorScheme.primaryContainer,
-                modifier = Modifier.size(48.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Default.FitnessCenter,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(24.dp)
+            .clip(cardShape)
+            .background(
+                brush = Brush.horizontalGradient(
+                    colors = listOf(
+                        Color(0xFF1E1A3D),
+                        Color(0xFF1A1535)
                     )
-                }
-            }
+                )
+            )
+            .border(
+                width = 1.dp,
+                color = Color(0xFF3A3560).copy(alpha = 0.5f),
+                shape = cardShape
+            )
+            .clickable(onClick = onClick)
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconBadge(
+            icon = Icons.Default.FitnessCenter,
+            backgroundColor = Primary.copy(alpha = 0.15f),
+            iconColor = Primary,
+            size = 48.dp
+        )
 
-            Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(16.dp))
 
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = exercise.name,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Medium
-                )
-                Text(
-                    text = exercise.muscleGroups.joinToString(", "),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = exercise.equipment.displayName,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.tertiary
-                )
-            }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = exercise.name,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.White
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = exercise.muscleGroups.joinToString(", "),
+                fontSize = 13.sp,
+                color = Color.White.copy(alpha = 0.6f)
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = exercise.equipment.displayName,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFF4ECDC4)
+            )
         }
     }
 }

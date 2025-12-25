@@ -2,54 +2,68 @@ package com.gymtracker.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Light Theme Colors
-val Primary = Color(0xFF1E88E5)          // Strong blue - main actions
+// ============================================
+// GymTracker Dark Theme - Deep Purple + Coral
+// Inspired by modern fintech/fitness apps
+// ============================================
+
+// Primary - Coral/Red (main actions, CTAs)
+val Primary = Color(0xFFFF6B6B)
 val OnPrimary = Color(0xFFFFFFFF)
-val PrimaryContainer = Color(0xFFD1E4FF)
-val OnPrimaryContainer = Color(0xFF001D36)
+val PrimaryContainer = Color(0xFF5C2D3D)
+val OnPrimaryContainer = Color(0xFFFFD7D7)
 
-val Secondary = Color(0xFF4CAF50)         // Green - success/completed
-val OnSecondary = Color(0xFFFFFFFF)
-val SecondaryContainer = Color(0xFFC8E6C9)
-val OnSecondaryContainer = Color(0xFF1B5E20)
+// Secondary - Soft Purple (secondary actions)
+val Secondary = Color(0xFF9D8DF1)
+val OnSecondary = Color(0xFF1A1432)
+val SecondaryContainer = Color(0xFF3D3570)
+val OnSecondaryContainer = Color(0xFFE8E0FF)
 
-val Tertiary = Color(0xFFFF7043)          // Orange - accent/warnings
-val OnTertiary = Color(0xFFFFFFFF)
-val TertiaryContainer = Color(0xFFFFCCBC)
-val OnTertiaryContainer = Color(0xFFBF360C)
+// Tertiary - Teal/Cyan (success, highlights)
+val Tertiary = Color(0xFF4ECDC4)
+val OnTertiary = Color(0xFF1A1432)
+val TertiaryContainer = Color(0xFF1E4A48)
+val OnTertiaryContainer = Color(0xFFB8F0EC)
 
-val Background = Color(0xFFF5F5F5)
-val OnBackground = Color(0xFF1C1B1F)
-val Surface = Color(0xFFFFFFFF)
-val OnSurface = Color(0xFF1C1B1F)
-val SurfaceVariant = Color(0xFFE7E0EC)
-val OnSurfaceVariant = Color(0xFF49454F)
+// Background & Surface - Deep Purple
+val Background = Color(0xFF0D0B1E)
+val OnBackground = Color(0xFFF5F5F7)
+val Surface = Color(0xFF1A1432)
+val OnSurface = Color(0xFFF5F5F7)
+val SurfaceVariant = Color(0xFF252047)
+val OnSurfaceVariant = Color(0xFFB8B5C8)
 
-val Error = Color(0xFFB00020)
+// Additional Surface Colors - Purple gradient
+val SurfaceContainerLowest = Color(0xFF08071A)
+val SurfaceContainerLow = Color(0xFF110F26)
+val SurfaceContainer = Color(0xFF1A1432)
+val SurfaceContainerHigh = Color(0xFF241E4A)
+val SurfaceContainerHighest = Color(0xFF2E275A)
+
+// Error Colors
+val Error = Color(0xFFFF6B6B)
 val OnError = Color(0xFFFFFFFF)
+val ErrorContainer = Color(0xFF5C2D3D)
+val OnErrorContainer = Color(0xFFFFB4B4)
 
-// Dark Theme Colors
-val PrimaryDark = Color(0xFF90CAF9)
-val OnPrimaryDark = Color(0xFF003258)
-val PrimaryContainerDark = Color(0xFF00497D)
-val OnPrimaryContainerDark = Color(0xFFD1E4FF)
+// Success Color
+val Success = Color(0xFF4ECDC4)
+val OnSuccess = Color(0xFF1A1432)
 
-val SecondaryDark = Color(0xFF81C784)
-val OnSecondaryDark = Color(0xFF1B5E20)
-val SecondaryContainerDark = Color(0xFF2E7D32)
-val OnSecondaryContainerDark = Color(0xFFC8E6C9)
+// Outline Colors
+val Outline = Color(0xFF4A4570)
+val OutlineVariant = Color(0xFF3A3560)
 
-val TertiaryDark = Color(0xFFFFAB91)
-val OnTertiaryDark = Color(0xFF5D1E00)
-val TertiaryContainerDark = Color(0xFF852F00)
-val OnTertiaryContainerDark = Color(0xFFFFCCBC)
+// Inverse Colors
+val InverseSurface = Color(0xFFF5F5F7)
+val InverseOnSurface = Color(0xFF1A1432)
+val InversePrimary = Color(0xFFCC5555)
 
-val BackgroundDark = Color(0xFF121212)
-val OnBackgroundDark = Color(0xFFE6E1E5)
-val SurfaceDark = Color(0xFF1E1E1E)
-val OnSurfaceDark = Color(0xFFE6E1E5)
-val SurfaceVariantDark = Color(0xFF49454F)
-val OnSurfaceVariantDark = Color(0xFFCAC4D0)
+// Scrim
+val Scrim = Color(0xFF000000)
 
-val ErrorDark = Color(0xFFCF6679)
-val OnErrorDark = Color(0xFF000000)
+// Custom colors for special UI elements
+val CardGradientStart = Color(0xFF1A1432)
+val CardGradientEnd = Color(0xFF2D2555)
+val GlowPurple = Color(0xFF6C5CE7)
+val AccentYellow = Color(0xFFFECA57)

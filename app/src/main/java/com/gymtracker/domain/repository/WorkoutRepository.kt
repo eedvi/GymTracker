@@ -17,4 +17,5 @@ interface WorkoutRepository {
     suspend fun deleteSet(setId: Long)
     suspend fun getPersonalRecord(exerciseId: Long): Float?
     suspend fun getWorkoutCountThisWeek(): Int
+    suspend fun getWeeklyVolume(): Float
 }

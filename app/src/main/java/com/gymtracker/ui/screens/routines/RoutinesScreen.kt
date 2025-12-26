@@ -20,17 +20,16 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.FitnessCenter
+import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -42,7 +41,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -52,7 +50,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gymtracker.domain.model.Routine
 import com.gymtracker.ui.theme.Background
-import com.gymtracker.ui.theme.Primary
+import com.gymtracker.ui.theme.CardBackground
+import com.gymtracker.ui.theme.CardBorder
+import com.gymtracker.ui.theme.TextPrimary
+import com.gymtracker.ui.theme.TextSecondary
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -83,26 +84,20 @@ fun RoutinesScreen(
             ) {
                 Text(
                     text = "Routines",
-                    fontSize = 28.sp,
+                    fontSize = 34.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = TextPrimary
                 )
 
-                // Add button
-                Surface(
-                    shape = CircleShape,
-                    color = Primary,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clickable(onClick = onCreateRoutine)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            Icons.Default.Add,
-                            contentDescription = "Create routine",
-                            tint = Color.White
-                        )
-                    }
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    MinimalIconButton(
+                        icon = Icons.Outlined.Settings,
+                        onClick = { }
+                    )
+                    MinimalIconButton(
+                        icon = Icons.Outlined.Add,
+                        onClick = onCreateRoutine
+                    )
                 }
             }
 
@@ -112,7 +107,7 @@ fun RoutinesScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator(color = Primary)
+                        CircularProgressIndicator(color = TextPrimary)
                     }
                 }
                 uiState.routines.isEmpty() -> {
@@ -122,10 +117,10 @@ fun RoutinesScreen(
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(horizontal = 20.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(uiState.routines, key = { it.id }) { routine ->
-                            PremiumRoutineCard(
+                            MinimalRoutineCard(
                                 routine = routine,
                                 onStart = { onStartRoutine(routine.id) },
                                 onEdit = { onEditRoutine(routine.id) },
@@ -135,7 +130,7 @@ fun RoutinesScreen(
 
                         // Bottom spacing
                         item {
-                            Spacer(modifier = Modifier.height(80.dp))
+                            Spacer(modifier = Modifier.height(100.dp))
                         }
                     }
                 }
@@ -147,9 +142,9 @@ fun RoutinesScreen(
     routineToDelete?.let { routine ->
         AlertDialog(
             onDismissRequest = { routineToDelete = null },
-            containerColor = Color(0xFF1E1A3D),
-            titleContentColor = Color.White,
-            textContentColor = Color.White.copy(alpha = 0.8f),
+            containerColor = CardBackground,
+            titleContentColor = TextPrimary,
+            textContentColor = TextSecondary,
             title = { Text("Delete Routine?") },
             text = { Text("Are you sure you want to delete \"${routine.name}\"? This cannot be undone.") },
             confirmButton = {
@@ -159,15 +154,39 @@ fun RoutinesScreen(
                         routineToDelete = null
                     }
                 ) {
-                    Text("Delete", color = Primary)
+                    Text("Delete", color = Color(0xFFFF453A))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { routineToDelete = null }) {
-                    Text("Cancel", color = Color.White.copy(alpha = 0.6f))
+                    Text("Cancel", color = TextSecondary)
                 }
             }
         )
+    }
+}
+
+@Composable
+private fun MinimalIconButton(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    onClick: () -> Unit
+) {
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = CardBackground,
+        modifier = Modifier
+            .size(44.dp)
+            .border(1.dp, CardBorder, RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick)
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = TextPrimary,
+                modifier = Modifier.size(20.dp)
+            )
+        }
     }
 }
 
@@ -185,44 +204,47 @@ private fun EmptyRoutinesContent(
         Icon(
             imageVector = Icons.Outlined.FitnessCenter,
             contentDescription = null,
-            modifier = Modifier.size(80.dp),
-            tint = Color.White.copy(alpha = 0.3f)
+            modifier = Modifier.size(64.dp),
+            tint = TextSecondary.copy(alpha = 0.5f)
         )
         Spacer(modifier = Modifier.height(24.dp))
         Text(
             text = "No Routines Yet",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.White
+            fontSize = 20.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = TextPrimary
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = "Create workout routines to quickly start your favorite workouts",
-            fontSize = 16.sp,
-            color = Color.White.copy(alpha = 0.6f),
+            fontSize = 14.sp,
+            color = TextSecondary,
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(32.dp))
 
         Surface(
-            shape = RoundedCornerShape(16.dp),
-            color = Primary,
-            modifier = Modifier.clickable(onClick = onCreateRoutine)
+            shape = RoundedCornerShape(12.dp),
+            color = CardBackground,
+            modifier = Modifier
+                .border(1.dp, CardBorder, RoundedCornerShape(12.dp))
+                .clickable(onClick = onCreateRoutine)
         ) {
             Row(
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 14.dp),
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    Icons.Default.Add,
+                    Icons.Outlined.Add,
                     contentDescription = null,
-                    tint = Color.White
+                    tint = TextPrimary,
+                    modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     "Create Routine",
-                    color = Color.White,
-                    fontWeight = FontWeight.SemiBold
+                    color = TextPrimary,
+                    fontWeight = FontWeight.Medium
                 )
             }
         }
@@ -230,39 +252,23 @@ private fun EmptyRoutinesContent(
 }
 
 @Composable
-private fun PremiumRoutineCard(
+private fun MinimalRoutineCard(
     routine: Routine,
     onStart: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
-    val dateFormat = SimpleDateFormat("MMM d, yyyy", Locale.getDefault())
-    val cardShape = RoundedCornerShape(20.dp)
+    val dateFormat = SimpleDateFormat("MMM d", Locale.getDefault())
+    val cardShape = RoundedCornerShape(16.dp)
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .clip(cardShape)
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF1E1A3D),
-                        Color(0xFF151030)
-                    )
-                )
-            )
-            .border(
-                width = 1.dp,
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF4A4570).copy(alpha = 0.6f),
-                        Color(0xFF2A2550).copy(alpha = 0.3f)
-                    )
-                ),
-                shape = cardShape
-            )
+            .background(CardBackground)
+            .border(1.dp, CardBorder, cardShape)
             .clickable(onClick = onEdit)
-            .padding(20.dp)
+            .padding(16.dp)
     ) {
         Column {
             Row(
@@ -273,40 +279,34 @@ private fun PremiumRoutineCard(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = routine.name,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = TextPrimary
                     )
                     if (routine.description != null) {
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = routine.description,
                             fontSize = 14.sp,
-                            color = Color.White.copy(alpha = 0.6f)
+                            color = TextSecondary
                         )
                     }
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Created ${dateFormat.format(Date(routine.createdAt))}",
-                        fontSize = 12.sp,
-                        color = Color.White.copy(alpha = 0.4f)
-                    )
                 }
 
-                // Start button
+                // Play button
                 Surface(
-                    shape = RoundedCornerShape(14.dp),
-                    color = Primary,
+                    shape = RoundedCornerShape(12.dp),
+                    color = CardBorder,
                     modifier = Modifier
-                        .size(52.dp)
+                        .size(44.dp)
                         .clickable(onClick = onStart)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
-                            imageVector = Icons.Default.PlayArrow,
+                            imageVector = Icons.Outlined.PlayArrow,
                             contentDescription = "Start routine",
-                            tint = Color.White,
-                            modifier = Modifier.size(28.dp)
+                            tint = TextPrimary,
+                            modifier = Modifier.size(22.dp)
                         )
                     }
                 }
@@ -320,35 +320,46 @@ private fun PremiumRoutineCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Exercise count badge
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = Color(0xFF6C5CE7).copy(alpha = 0.2f)
-                ) {
+                // Info
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = "${routine.exerciseCount} exercises",
                         fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color(0xFF9D8DF1),
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        color = TextSecondary
+                    )
+                    Text(
+                        text = " · ",
+                        fontSize = 13.sp,
+                        color = TextSecondary.copy(alpha = 0.5f)
+                    )
+                    Text(
+                        text = dateFormat.format(Date(routine.createdAt)),
+                        fontSize = 13.sp,
+                        color = TextSecondary.copy(alpha = 0.7f)
                     )
                 }
 
                 Row {
-                    IconButton(onClick = onEdit) {
+                    IconButton(
+                        onClick = onEdit,
+                        modifier = Modifier.size(36.dp)
+                    ) {
                         Icon(
-                            Icons.Default.Edit,
+                            Icons.Outlined.Edit,
                             contentDescription = "Edit",
-                            tint = Color(0xFF4ECDC4),
-                            modifier = Modifier.size(22.dp)
+                            tint = TextSecondary,
+                            modifier = Modifier.size(18.dp)
                         )
                     }
-                    IconButton(onClick = onDelete) {
+                    IconButton(
+                        onClick = onDelete,
+                        modifier = Modifier.size(36.dp)
+                    ) {
                         Icon(
-                            Icons.Default.Delete,
+                            Icons.Outlined.Delete,
                             contentDescription = "Delete",
-                            tint = Primary,
-                            modifier = Modifier.size(22.dp)
+                            tint = TextSecondary,
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                 }

@@ -2,9 +2,11 @@ package com.gymtracker.di
 
 import com.gymtracker.data.repository.ExerciseRepositoryImpl
 import com.gymtracker.data.repository.RoutineRepositoryImpl
+import com.gymtracker.data.repository.SettingsRepositoryImpl
 import com.gymtracker.data.repository.WorkoutRepositoryImpl
 import com.gymtracker.domain.repository.ExerciseRepository
 import com.gymtracker.domain.repository.RoutineRepository
+import com.gymtracker.domain.repository.SettingsRepository
 import com.gymtracker.domain.repository.WorkoutRepository
 import dagger.Binds
 import dagger.Module
@@ -33,4 +35,10 @@ abstract class RepositoryModule {
     abstract fun bindRoutineRepository(
         routineRepositoryImpl: RoutineRepositoryImpl
     ): RoutineRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindSettingsRepository(
+        settingsRepositoryImpl: SettingsRepositoryImpl
+    ): SettingsRepository
 }

@@ -23,18 +23,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.gymtracker.ui.theme.GlowPurple
-import com.gymtracker.ui.theme.Primary
+import com.gymtracker.ui.theme.CardBackground
+import com.gymtracker.ui.theme.CardBorder
+import com.gymtracker.ui.theme.TextPrimary
+import com.gymtracker.ui.theme.TextSecondary
 
 /**
- * Premium glass-style card with gradient border
+ * Minimal card with subtle border
  */
 @Composable
 fun GlassCard(
@@ -42,65 +43,45 @@ fun GlassCard(
     onClick: (() -> Unit)? = null,
     content: @Composable () -> Unit
 ) {
-    val cardShape = RoundedCornerShape(20.dp)
+    val cardShape = RoundedCornerShape(16.dp)
 
     Box(
         modifier = modifier
             .clip(cardShape)
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF1E1A3D),
-                        Color(0xFF151030)
-                    )
-                )
-            )
-            .border(
-                width = 1.dp,
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF4A4570).copy(alpha = 0.6f),
-                        Color(0xFF2A2550).copy(alpha = 0.3f)
-                    )
-                ),
-                shape = cardShape
-            )
+            .background(CardBackground)
+            .border(1.dp, CardBorder, cardShape)
             .then(
                 if (onClick != null) Modifier.clickable(onClick = onClick)
                 else Modifier
             )
-            .padding(20.dp)
+            .padding(16.dp)
     ) {
         content()
     }
 }
 
 /**
- * Gradient card for featured/hero sections
+ * Gradient card - now minimal style
  */
 @Composable
 fun GradientCard(
     modifier: Modifier = Modifier,
-    gradientColors: List<Color> = listOf(
-        Color(0xFF6C5CE7),
-        Color(0xFF8E7CF3)
-    ),
+    gradientColors: List<Color> = listOf(CardBackground, CardBackground),
     onClick: (() -> Unit)? = null,
     content: @Composable () -> Unit
 ) {
-    val cardShape = RoundedCornerShape(24.dp)
+    val cardShape = RoundedCornerShape(16.dp)
 
     Box(
         modifier = modifier
             .clip(cardShape)
-            .background(
-                brush = Brush.linearGradient(colors = gradientColors)
-            )
+            .background(CardBackground)
+            .border(1.dp, CardBorder, cardShape)
             .then(
                 if (onClick != null) Modifier.clickable(onClick = onClick)
                 else Modifier
             )
-            .padding(24.dp)
+            .padding(20.dp)
     ) {
         content()
     }
@@ -115,8 +96,8 @@ fun CircleIconButton(
     label: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    backgroundColor: Color = Color(0xFF2A2555),
-    iconColor: Color = Color.White,
+    backgroundColor: Color = CardBackground,
+    iconColor: Color = TextPrimary,
     size: Dp = 56.dp
 ) {
     Column(
@@ -126,7 +107,9 @@ fun CircleIconButton(
         Surface(
             shape = CircleShape,
             color = backgroundColor,
-            modifier = Modifier.size(size)
+            modifier = Modifier
+                .size(size)
+                .border(1.dp, CardBorder, CircleShape)
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
@@ -141,7 +124,7 @@ fun CircleIconButton(
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
-            color = Color.White.copy(alpha = 0.7f)
+            color = TextSecondary
         )
     }
 }
@@ -154,7 +137,7 @@ fun StatDisplay(
     value: String,
     label: String,
     modifier: Modifier = Modifier,
-    valueColor: Color = Color.White,
+    valueColor: Color = TextPrimary,
     suffix: String? = null
 ) {
     Column(
@@ -183,7 +166,7 @@ fun StatDisplay(
         Text(
             text = label,
             style = MaterialTheme.typography.bodySmall,
-            color = Color.White.copy(alpha = 0.6f)
+            color = TextSecondary
         )
     }
 }
@@ -218,8 +201,8 @@ fun SegmentedControl(
 ) {
     Surface(
         shape = RoundedCornerShape(12.dp),
-        color = Color(0xFF1A1535),
-        modifier = modifier
+        color = CardBackground,
+        modifier = modifier.border(1.dp, CardBorder, RoundedCornerShape(12.dp))
     ) {
         Row(
             modifier = Modifier.padding(4.dp)
@@ -228,14 +211,13 @@ fun SegmentedControl(
                 val isSelected = index == selectedIndex
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = if (isSelected) Primary else Color.Transparent,
-                    modifier = Modifier
-                        .clickable { onOptionSelected(index) }
+                    color = if (isSelected) CardBorder else Color.Transparent,
+                    modifier = Modifier.clickable { onOptionSelected(index) }
                 ) {
                     Text(
                         text = option,
                         style = MaterialTheme.typography.labelMedium,
-                        color = if (isSelected) Color.White else Color.White.copy(alpha = 0.5f),
+                        color = if (isSelected) TextPrimary else TextSecondary,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                     )
                 }
@@ -245,7 +227,7 @@ fun SegmentedControl(
 }
 
 /**
- * Premium list item card
+ * Minimal list item card
  */
 @Composable
 fun PremiumListItem(
@@ -262,19 +244,8 @@ fun PremiumListItem(
         modifier = modifier
             .fillMaxWidth()
             .clip(cardShape)
-            .background(
-                brush = Brush.horizontalGradient(
-                    colors = listOf(
-                        Color(0xFF1E1A3D),
-                        Color(0xFF1A1535)
-                    )
-                )
-            )
-            .border(
-                width = 1.dp,
-                color = Color(0xFF3A3560).copy(alpha = 0.5f),
-                shape = cardShape
-            )
+            .background(CardBackground)
+            .border(1.dp, CardBorder, cardShape)
             .then(
                 if (onClick != null) Modifier.clickable(onClick = onClick)
                 else Modifier
@@ -292,12 +263,12 @@ fun PremiumListItem(
                 text = title,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = Color.White
+                color = TextPrimary
             )
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.bodySmall,
-                color = Color.White.copy(alpha = 0.6f)
+                color = TextSecondary
             )
         }
 
@@ -313,8 +284,8 @@ fun PremiumListItem(
 @Composable
 fun IconBadge(
     icon: ImageVector,
-    backgroundColor: Color = Primary.copy(alpha = 0.2f),
-    iconColor: Color = Primary,
+    backgroundColor: Color = CardBorder,
+    iconColor: Color = TextPrimary,
     size: Dp = 48.dp
 ) {
     Surface(
@@ -352,13 +323,13 @@ fun SectionHeader(
             text = title,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
-            color = Color.White
+            color = TextPrimary
         )
         if (action != null && onActionClick != null) {
             Text(
                 text = action,
                 style = MaterialTheme.typography.labelMedium,
-                color = Primary,
+                color = TextSecondary,
                 modifier = Modifier.clickable(onClick = onActionClick)
             )
         }

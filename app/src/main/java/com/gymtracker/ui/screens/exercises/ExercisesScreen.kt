@@ -22,11 +22,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FitnessCenter
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.FitnessCenter
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,8 +33,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -45,9 +42,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gymtracker.domain.model.Exercise
 import com.gymtracker.domain.model.ExerciseCategory
-import com.gymtracker.ui.components.IconBadge
 import com.gymtracker.ui.theme.Background
-import com.gymtracker.ui.theme.Primary
+import com.gymtracker.ui.theme.CardBackground
+import com.gymtracker.ui.theme.CardBorder
+import com.gymtracker.ui.theme.TextPrimary
+import com.gymtracker.ui.theme.TextSecondary
 
 @Composable
 fun ExercisesScreen(
@@ -58,23 +57,39 @@ fun ExercisesScreen(
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val selectedCategory by viewModel.selectedCategory.collectAsStateWithLifecycle()
 
+    val totalExercises = uiState.exercises.size
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Background)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            // Header
-            Text(
-                text = "Exercises",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-                modifier = Modifier.padding(start = 20.dp, top = 16.dp, bottom = 16.dp)
-            )
+            // Header with count
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Exercises",
+                    fontSize = 34.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary
+                )
+                if (totalExercises > 0) {
+                    Text(
+                        text = "$totalExercises",
+                        fontSize = 14.sp,
+                        color = TextSecondary
+                    )
+                }
+            }
 
             // Search bar
-            PremiumSearchBar(
+            MinimalSearchBar(
                 query = searchQuery,
                 onQueryChange = viewModel::onSearchQueryChange,
                 modifier = Modifier
@@ -100,7 +115,7 @@ fun ExercisesScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator(color = Primary)
+                        CircularProgressIndicator(color = TextPrimary)
                     }
                 }
                 uiState.exercises.isEmpty() -> {
@@ -110,16 +125,16 @@ fun ExercisesScreen(
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(
-                                imageVector = Icons.Default.FitnessCenter,
+                                imageVector = Icons.Outlined.FitnessCenter,
                                 contentDescription = null,
-                                tint = Color.White.copy(alpha = 0.3f),
+                                tint = TextSecondary.copy(alpha = 0.5f),
                                 modifier = Modifier.size(64.dp)
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
                                 text = "No exercises found",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = Color.White.copy(alpha = 0.6f)
+                                fontSize = 16.sp,
+                                color = TextSecondary
                             )
                         }
                     }
@@ -136,22 +151,18 @@ fun ExercisesScreen(
 }
 
 @Composable
-private fun PremiumSearchBar(
+private fun MinimalSearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val shape = RoundedCornerShape(16.dp)
+    val shape = RoundedCornerShape(12.dp)
 
     Box(
         modifier = modifier
             .clip(shape)
-            .background(Color(0xFF1E1A3D))
-            .border(
-                width = 1.dp,
-                color = Color(0xFF3A3560).copy(alpha = 0.5f),
-                shape = shape
-            )
+            .background(CardBackground)
+            .border(1.dp, CardBorder, shape)
             .padding(horizontal = 16.dp, vertical = 14.dp)
     ) {
         Row(
@@ -159,9 +170,9 @@ private fun PremiumSearchBar(
             modifier = Modifier.fillMaxWidth()
         ) {
             Icon(
-                imageVector = Icons.Default.Search,
+                imageVector = Icons.Outlined.Search,
                 contentDescription = "Search",
-                tint = Color.White.copy(alpha = 0.5f),
+                tint = TextSecondary,
                 modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(12.dp))
@@ -169,7 +180,7 @@ private fun PremiumSearchBar(
                 if (query.isEmpty()) {
                     Text(
                         text = "Search exercises...",
-                        color = Color.White.copy(alpha = 0.4f),
+                        color = TextSecondary.copy(alpha = 0.6f),
                         fontSize = 16.sp
                     )
                 }
@@ -177,11 +188,11 @@ private fun PremiumSearchBar(
                     value = query,
                     onValueChange = onQueryChange,
                     textStyle = TextStyle(
-                        color = Color.White,
+                        color = TextPrimary,
                         fontSize = 16.sp
                     ),
                     singleLine = true,
-                    cursorBrush = SolidColor(Primary),
+                    cursorBrush = SolidColor(TextPrimary),
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -201,13 +212,13 @@ private fun CategoryFilterChips(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        PremiumChip(
+        MinimalChip(
             text = "All",
             selected = selectedCategory == null,
             onClick = { onCategorySelect(null) }
         )
         ExerciseCategory.entries.forEach { category ->
-            PremiumChip(
+            MinimalChip(
                 text = category.displayName,
                 selected = selectedCategory == category,
                 onClick = { onCategorySelect(category) }
@@ -217,26 +228,28 @@ private fun CategoryFilterChips(
 }
 
 @Composable
-private fun PremiumChip(
+private fun MinimalChip(
     text: String,
     selected: Boolean,
     onClick: () -> Unit
 ) {
-    val shape = RoundedCornerShape(12.dp)
-    val backgroundColor = if (selected) Primary else Color(0xFF2A2555)
-    val textColor = if (selected) Color.White else Color.White.copy(alpha = 0.7f)
+    val shape = RoundedCornerShape(10.dp)
+    val backgroundColor = if (selected) CardBorder else CardBackground
+    val textColor = if (selected) TextPrimary else TextSecondary
 
     Surface(
         shape = shape,
         color = backgroundColor,
-        modifier = Modifier.clickable(onClick = onClick)
+        modifier = Modifier
+            .border(1.dp, CardBorder, shape)
+            .clickable(onClick = onClick)
     ) {
         Text(
             text = text,
             color = textColor,
             fontSize = 14.sp,
-            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+            fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
         )
     }
 }
@@ -248,20 +261,32 @@ private fun ExercisesList(
 ) {
     LazyColumn(
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         groupedExercises.forEach { (category, exercises) ->
             item {
-                Text(
-                    text = category.displayName,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Primary,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = category.displayName,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = TextSecondary
+                    )
+                    Text(
+                        text = "${exercises.size}",
+                        fontSize = 12.sp,
+                        color = TextSecondary.copy(alpha = 0.6f)
+                    )
+                }
             }
             items(exercises, key = { it.id }) { exercise ->
-                PremiumExerciseCard(
+                MinimalExerciseCard(
                     exercise = exercise,
                     onClick = { onExerciseClick(exercise) }
                 )
@@ -270,67 +295,58 @@ private fun ExercisesList(
 
         // Bottom spacing for nav bar
         item {
-            Spacer(modifier = Modifier.height(80.dp))
+            Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }
 
 @Composable
-private fun PremiumExerciseCard(
+private fun MinimalExerciseCard(
     exercise: Exercise,
     onClick: () -> Unit
 ) {
-    val cardShape = RoundedCornerShape(16.dp)
+    val cardShape = RoundedCornerShape(12.dp)
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(cardShape)
-            .background(
-                brush = Brush.horizontalGradient(
-                    colors = listOf(
-                        Color(0xFF1E1A3D),
-                        Color(0xFF1A1535)
-                    )
-                )
-            )
-            .border(
-                width = 1.dp,
-                color = Color(0xFF3A3560).copy(alpha = 0.5f),
-                shape = cardShape
-            )
+            .background(CardBackground)
+            .border(1.dp, CardBorder, cardShape)
             .clickable(onClick = onClick)
-            .padding(16.dp),
+            .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconBadge(
-            icon = Icons.Default.FitnessCenter,
-            backgroundColor = Primary.copy(alpha = 0.15f),
-            iconColor = Primary,
-            size = 48.dp
-        )
+        // Icon
+        Surface(
+            shape = RoundedCornerShape(10.dp),
+            color = CardBorder,
+            modifier = Modifier.size(40.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = Icons.Outlined.FitnessCenter,
+                    contentDescription = null,
+                    tint = TextPrimary,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        }
 
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(12.dp))
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = exercise.name,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color.White
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = exercise.muscleGroups.joinToString(", "),
-                fontSize = 13.sp,
-                color = Color.White.copy(alpha = 0.6f)
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium,
+                color = TextPrimary
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
-                text = exercise.equipment.displayName,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color(0xFF4ECDC4)
+                text = "${exercise.muscleGroups.joinToString(", ")} · ${exercise.equipment.displayName}",
+                fontSize = 13.sp,
+                color = TextSecondary
             )
         }
     }

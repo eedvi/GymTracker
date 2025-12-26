@@ -69,6 +69,14 @@ interface WorkoutDao {
 
     @Query("SELECT COUNT(*) FROM workouts WHERE startTime >= :since")
     suspend fun getWorkoutCountSince(since: Long): Int
+
+    @Query("""
+        SELECT COALESCE(SUM(ws.weight * ws.reps), 0)
+        FROM workout_sets ws
+        INNER JOIN workouts w ON ws.workoutId = w.id
+        WHERE w.startTime >= :since AND w.endTime IS NOT NULL
+    """)
+    suspend fun getVolumeSince(since: Long): Float
 }
 
 data class WorkoutSetWithExercise(

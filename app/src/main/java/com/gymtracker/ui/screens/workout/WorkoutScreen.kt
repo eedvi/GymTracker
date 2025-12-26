@@ -25,14 +25,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.FitnessCenter
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.FitnessCenter
+import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -52,7 +50,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
@@ -65,11 +62,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gymtracker.domain.model.Exercise
 import com.gymtracker.domain.model.RoutineExercise
+import com.gymtracker.domain.model.WeightUnit
 import com.gymtracker.domain.model.WorkoutSet
-import com.gymtracker.ui.components.GlassCard
-import com.gymtracker.ui.components.IconBadge
 import com.gymtracker.ui.theme.Background
-import com.gymtracker.ui.theme.Primary
+import com.gymtracker.ui.theme.CardBackground
+import com.gymtracker.ui.theme.CardBorder
+import com.gymtracker.ui.theme.TextPrimary
+import com.gymtracker.ui.theme.TextSecondary
 import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -86,9 +85,21 @@ fun WorkoutScreen(
     val restTimerSeconds by viewModel.restTimerSeconds.collectAsStateWithLifecycle()
     val isRestTimerRunning by viewModel.isRestTimerRunning.collectAsStateWithLifecycle()
     val routineExercises by viewModel.routineExercises.collectAsStateWithLifecycle()
+    val weightUnit by viewModel.weightUnit.collectAsStateWithLifecycle()
 
     var showFinishDialog by remember { mutableStateOf(false) }
     var showCancelDialog by remember { mutableStateOf(false) }
+
+    // Calculate elapsed minutes for active workout
+    val elapsedMinutes = remember(uiState) {
+        when (val state = uiState) {
+            is WorkoutUiState.Active -> {
+                val elapsed = System.currentTimeMillis() - state.startTime
+                TimeUnit.MILLISECONDS.toMinutes(elapsed)
+            }
+            else -> 0L
+        }
+    }
 
     LaunchedEffect(selectedExercise) {
         if (selectedExercise != null) {
@@ -96,6 +107,8 @@ fun WorkoutScreen(
             onExerciseHandled()
         }
     }
+
+    val isActive = uiState is WorkoutUiState.Active
 
     Box(
         modifier = Modifier
@@ -113,49 +126,36 @@ fun WorkoutScreen(
             ) {
                 Text(
                     text = "Workout",
-                    fontSize = 28.sp,
+                    fontSize = 34.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = TextPrimary
                 )
 
-                if (uiState is WorkoutUiState.Active) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        // Cancel button
-                        Surface(
-                            shape = CircleShape,
-                            color = Color(0xFF2A2555),
-                            modifier = Modifier
-                                .size(44.dp)
-                                .clickable { showCancelDialog = true }
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    Icons.Default.Close,
-                                    contentDescription = "Cancel",
-                                    tint = Primary,
-                                    modifier = Modifier.size(22.dp)
-                                )
-                            }
-                        }
-                        // Finish button
-                        Surface(
-                            shape = CircleShape,
-                            color = Primary,
-                            modifier = Modifier
-                                .size(44.dp)
-                                .clickable { showFinishDialog = true }
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    Icons.Default.Done,
-                                    contentDescription = "Finish",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(22.dp)
-                                )
-                            }
-                        }
+                if (isActive) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        MinimalIconButton(
+                            icon = Icons.Outlined.Close,
+                            onClick = { showCancelDialog = true }
+                        )
+                        MinimalIconButton(
+                            icon = Icons.Outlined.Check,
+                            onClick = { showFinishDialog = true }
+                        )
                     }
                 }
+            }
+
+            // Rest Timer Banner
+            AnimatedVisibility(
+                visible = isRestTimerRunning,
+                enter = expandVertically(),
+                exit = shrinkVertically()
+            ) {
+                RestTimerBanner(
+                    seconds = restTimerSeconds,
+                    onAddTime = { viewModel.addRestTime(30) },
+                    onStop = { viewModel.stopRestTimer() }
+                )
             }
 
             when (val state = uiState) {
@@ -164,26 +164,111 @@ fun WorkoutScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator(color = Primary)
+                        CircularProgressIndicator(color = TextPrimary)
                     }
                 }
 
                 is WorkoutUiState.NoActiveWorkout -> {
-                    NoActiveWorkoutContent(onStartWorkout = viewModel::startNewWorkout)
+                    // Empty state
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(20.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                imageVector = Icons.Outlined.FitnessCenter,
+                                contentDescription = null,
+                                tint = TextSecondary.copy(alpha = 0.5f),
+                                modifier = Modifier.size(64.dp)
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "No Active Workout",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = TextPrimary
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Start a workout from the Home screen",
+                                fontSize = 14.sp,
+                                color = TextSecondary,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
                 }
 
                 is WorkoutUiState.Active -> {
-                    ActiveWorkoutContent(
-                        state = state,
-                        routineExercises = routineExercises,
-                        restTimerSeconds = restTimerSeconds,
-                        isRestTimerRunning = isRestTimerRunning,
-                        onAddRestTime = viewModel::addRestTime,
-                        onStopTimer = viewModel::stopRestTimer,
-                        onDeleteSet = viewModel::deleteSet,
-                        onExerciseClick = viewModel::selectExercise,
-                        onNavigateToExercises = onNavigateToExercises
+                    // Stats Card
+                    MinimalStatsCard(
+                        elapsedMinutes = elapsedMinutes,
+                        totalSets = state.totalSets,
+                        totalVolume = state.totalVolume,
+                        weightUnit = weightUnit,
+                        routineName = state.routineName
                     )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Exercise List
+                    LazyColumn(
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(horizontal = 20.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        // Completed exercises with sets
+                        items(state.exercisesWithSets, key = { it.exerciseId }) { exerciseWithSets ->
+                            ExerciseSetCard(
+                                exerciseName = exerciseWithSets.exerciseName,
+                                exerciseId = exerciseWithSets.exerciseId,
+                                sets = exerciseWithSets.sets,
+                                weightUnit = weightUnit,
+                                onAddSet = { viewModel.selectExerciseById(exerciseWithSets.exerciseId, exerciseWithSets.exerciseName) },
+                                onDeleteSet = { viewModel.deleteSet(it) }
+                            )
+                        }
+
+                        // Pending routine exercises
+                        if (routineExercises.isNotEmpty()) {
+                            val completedExerciseIds = state.exercisesWithSets.map { it.exerciseId }.toSet()
+                            val pendingExercises = routineExercises.filter { it.exercise.id !in completedExerciseIds }
+
+                            if (pendingExercises.isNotEmpty()) {
+                                item {
+                                    Text(
+                                        text = "Up Next",
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = TextSecondary,
+                                        modifier = Modifier.padding(vertical = 8.dp)
+                                    )
+                                }
+
+                                items(pendingExercises, key = { it.exercise.id }) { routineExercise ->
+                                    PendingExerciseCard(
+                                        routineExercise = routineExercise,
+                                        onStart = { viewModel.selectExercise(routineExercise.exercise) }
+                                    )
+                                }
+                            }
+                        }
+
+                        // Add Exercise Button
+                        item {
+                            MinimalAddButton(
+                                text = "Add Exercise",
+                                onClick = onNavigateToExercises
+                            )
+                        }
+
+                        // Bottom spacing
+                        item {
+                            Spacer(modifier = Modifier.height(100.dp))
+                        }
+                    }
                 }
             }
         }
@@ -191,313 +276,93 @@ fun WorkoutScreen(
 
     // Add Set Bottom Sheet
     if (isAddingSet && currentSelectedExercise != null) {
-        AddSetBottomSheet(
-            exercise = currentSelectedExercise!!,
-            onDismiss = viewModel::clearSelectedExercise,
-            onAddSet = { weight, reps, rpe ->
-                viewModel.addSet(weight, reps, rpe)
-            }
-        )
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+        ModalBottomSheet(
+            onDismissRequest = { viewModel.clearSelectedExercise() },
+            sheetState = sheetState,
+            containerColor = CardBackground
+        ) {
+            AddSetBottomSheet(
+                exerciseName = currentSelectedExercise!!.name,
+                weightUnit = weightUnit,
+                onSave = { weight, reps, rpe ->
+                    viewModel.addSet(weight, reps, rpe)
+                },
+                onDismiss = { viewModel.clearSelectedExercise() }
+            )
+        }
     }
 
-    // Finish Workout Dialog
+    // Finish Dialog
     if (showFinishDialog) {
-        PremiumDialog(
+        MinimalDialog(
             title = "Finish Workout?",
-            content = {
-                var notes by remember { mutableStateOf("") }
-                Column {
-                    Text(
-                        "Add notes (optional):",
-                        color = Color.White.copy(alpha = 0.7f),
-                        fontSize = 14.sp
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    PremiumTextField(
-                        value = notes,
-                        onValueChange = { notes = it },
-                        placeholder = "How did it go?"
-                    )
-                }
-            },
-            onDismiss = { showFinishDialog = false },
+            message = "Save this workout session?",
+            confirmText = "Finish",
             onConfirm = {
-                viewModel.finishWorkout(null)
+                viewModel.finishWorkout()
                 showFinishDialog = false
             },
-            confirmText = "Finish",
-            dismissText = "Cancel"
+            onDismiss = { showFinishDialog = false }
         )
     }
 
-    // Cancel Workout Dialog
+    // Cancel Dialog
     if (showCancelDialog) {
-        PremiumDialog(
+        MinimalDialog(
             title = "Cancel Workout?",
-            content = {
-                Text(
-                    "This will delete all logged sets. Are you sure?",
-                    color = Color.White.copy(alpha = 0.7f),
-                    fontSize = 14.sp
-                )
-            },
-            onDismiss = { showCancelDialog = false },
+            message = "All progress will be lost.",
+            confirmText = "Cancel Workout",
+            confirmColor = Color(0xFFFF453A),
             onConfirm = {
                 viewModel.cancelWorkout()
                 showCancelDialog = false
             },
-            confirmText = "Cancel Workout",
-            dismissText = "Keep Going",
-            isDestructive = true
+            onDismiss = { showCancelDialog = false }
         )
     }
 }
 
 @Composable
-private fun NoActiveWorkoutContent(onStartWorkout: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Icon(
-            imageVector = Icons.Default.FitnessCenter,
-            contentDescription = null,
-            modifier = Modifier.size(80.dp),
-            tint = Color.White.copy(alpha = 0.3f)
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-        Text(
-            text = "No Active Workout",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.White
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Start a new workout to begin logging your exercises",
-            fontSize = 16.sp,
-            color = Color.White.copy(alpha = 0.6f),
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Surface(
-            shape = RoundedCornerShape(16.dp),
-            color = Primary,
-            modifier = Modifier.clickable(onClick = onStartWorkout)
-        ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 32.dp, vertical = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    Icons.Default.PlayArrow,
-                    contentDescription = null,
-                    tint = Color.White
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    "Start Workout",
-                    color = Color.White,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 16.sp
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ActiveWorkoutContent(
-    state: WorkoutUiState.Active,
-    routineExercises: List<RoutineExercise>,
-    restTimerSeconds: Int,
-    isRestTimerRunning: Boolean,
-    onAddRestTime: (Int) -> Unit,
-    onStopTimer: () -> Unit,
-    onDeleteSet: (WorkoutSet) -> Unit,
-    onExerciseClick: (Exercise) -> Unit,
-    onNavigateToExercises: () -> Unit
+private fun MinimalIconButton(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    onClick: () -> Unit
 ) {
-    val loggedExerciseIds = state.exercisesWithSets.map { it.exerciseId }.toSet()
-
-    Column(modifier = Modifier.fillMaxSize()) {
-        // Rest Timer Banner
-        AnimatedVisibility(
-            visible = isRestTimerRunning,
-            enter = expandVertically(),
-            exit = shrinkVertically()
-        ) {
-            PremiumRestTimerBanner(
-                seconds = restTimerSeconds,
-                onAddTime = { onAddRestTime(30) },
-                onStop = onStopTimer
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = CardBackground,
+        modifier = Modifier
+            .size(44.dp)
+            .border(1.dp, CardBorder, RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick)
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = TextPrimary,
+                modifier = Modifier.size(20.dp)
             )
         }
-
-        // Workout Stats Card
-        PremiumStatsCard(
-            startTime = state.startTime,
-            totalSets = state.totalSets,
-            totalVolume = state.totalVolume,
-            routineName = state.routineName,
-            modifier = Modifier.padding(horizontal = 20.dp)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Exercise List
-        if (state.exercisesWithSets.isEmpty() && routineExercises.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(32.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "Tap + to add your first exercise",
-                        fontSize = 16.sp,
-                        color = Color.White.copy(alpha = 0.5f),
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Surface(
-                        shape = CircleShape,
-                        color = Primary,
-                        modifier = Modifier
-                            .size(64.dp)
-                            .clickable(onClick = onNavigateToExercises)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                Icons.Default.Add,
-                                contentDescription = "Add exercise",
-                                tint = Color.White,
-                                modifier = Modifier.size(32.dp)
-                            )
-                        }
-                    }
-                }
-            }
-        } else {
-            LazyColumn(
-                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // Show logged exercises first
-                items(state.exercisesWithSets, key = { it.exerciseId }) { exerciseWithSets ->
-                    PremiumExerciseSetCard(
-                        exerciseWithSets = exerciseWithSets,
-                        routineExercise = routineExercises.find { it.exercise.id == exerciseWithSets.exerciseId },
-                        onDeleteSet = onDeleteSet,
-                        onAddSet = {
-                            onExerciseClick(
-                                Exercise(
-                                    id = exerciseWithSets.exerciseId,
-                                    name = exerciseWithSets.exerciseName,
-                                    category = com.gymtracker.domain.model.ExerciseCategory.PUSH,
-                                    muscleGroups = emptyList(),
-                                    equipment = com.gymtracker.domain.model.Equipment.OTHER
-                                )
-                            )
-                        }
-                    )
-                }
-
-                // Show pending routine exercises
-                val pendingExercises = routineExercises.filter { it.exercise.id !in loggedExerciseIds }
-                if (pendingExercises.isNotEmpty()) {
-                    item {
-                        Text(
-                            text = "Remaining Exercises",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color.White.copy(alpha = 0.6f),
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        )
-                    }
-                    items(pendingExercises, key = { it.exercise.id }) { routineExercise ->
-                        PremiumPendingExerciseCard(
-                            routineExercise = routineExercise,
-                            onClick = { onExerciseClick(routineExercise.exercise) }
-                        )
-                    }
-                }
-
-                // Add exercise button
-                item {
-                    Surface(
-                        shape = RoundedCornerShape(16.dp),
-                        color = Color(0xFF2A2555),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable(onClick = onNavigateToExercises)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                Icons.Default.Add,
-                                contentDescription = null,
-                                tint = Primary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                "Add Exercise",
-                                color = Primary,
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
-                    }
-                }
-
-                item { Spacer(modifier = Modifier.height(80.dp)) }
-            }
-        }
     }
 }
 
 @Composable
-private fun PremiumRestTimerBanner(
+private fun RestTimerBanner(
     seconds: Int,
     onAddTime: () -> Unit,
     onStop: () -> Unit
 ) {
-    val shape = RoundedCornerShape(20.dp)
-    val progress = (seconds % 90) / 90f // Circular progress based on typical rest time
+    val shape = RoundedCornerShape(16.dp)
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 8.dp)
             .clip(shape)
-            .background(
-                brush = Brush.horizontalGradient(
-                    colors = listOf(
-                        Color(0xFF1E1A3D),
-                        Color(0xFF2A2255)
-                    )
-                )
-            )
-            .border(
-                width = 1.dp,
-                brush = Brush.horizontalGradient(
-                    colors = listOf(
-                        Color(0xFF4A4570).copy(alpha = 0.6f),
-                        Color(0xFF6C5CE7).copy(alpha = 0.4f)
-                    )
-                ),
-                shape = shape
-            )
+            .background(CardBackground)
+            .border(1.dp, CardBorder, shape)
             .padding(16.dp)
     ) {
         Row(
@@ -505,79 +370,57 @@ private fun PremiumRestTimerBanner(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Timer display with circular progress
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(contentAlignment = Alignment.Center) {
-                    // Background ring
-                    CircularProgressIndicator(
-                        progress = { 1f },
-                        modifier = Modifier.size(56.dp),
-                        color = Color(0xFF3A3560),
-                        strokeWidth = 4.dp
-                    )
-                    // Progress ring
-                    CircularProgressIndicator(
-                        progress = { progress },
-                        modifier = Modifier.size(56.dp),
-                        color = Color(0xFF4ECDC4),
-                        strokeWidth = 4.dp
-                    )
-                    // Timer icon
-                    Icon(
-                        Icons.Default.Timer,
-                        contentDescription = null,
-                        tint = Color(0xFF4ECDC4),
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(16.dp))
+                Icon(
+                    Icons.Outlined.Timer,
+                    contentDescription = null,
+                    tint = TextSecondary,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
                         text = "REST",
                         fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color(0xFF4ECDC4),
+                        color = TextSecondary,
                         letterSpacing = 1.sp
                     )
                     Text(
                         text = formatTime(seconds),
-                        fontSize = 32.sp,
+                        fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = TextPrimary
                     )
                 }
             }
 
-            // Action buttons
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                // +30s button
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Surface(
-                    shape = RoundedCornerShape(14.dp),
-                    color = Color(0xFF4ECDC4).copy(alpha = 0.15f),
+                    shape = RoundedCornerShape(10.dp),
+                    color = CardBorder,
                     modifier = Modifier.clickable(onClick = onAddTime)
                 ) {
                     Text(
                         "+30s",
-                        color = Color(0xFF4ECDC4),
-                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary,
+                        fontWeight = FontWeight.Medium,
                         fontSize = 14.sp,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
                     )
                 }
-                // Stop button
                 Surface(
-                    shape = RoundedCornerShape(14.dp),
-                    color = Primary.copy(alpha = 0.15f),
+                    shape = RoundedCornerShape(10.dp),
+                    color = CardBorder,
                     modifier = Modifier
-                        .size(44.dp)
+                        .size(40.dp)
                         .clickable(onClick = onStop)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
-                            Icons.Default.Close,
+                            Icons.Outlined.Close,
                             contentDescription = "Stop",
-                            tint = Primary,
-                            modifier = Modifier.size(20.dp)
+                            tint = TextPrimary,
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                 }
@@ -587,25 +430,30 @@ private fun PremiumRestTimerBanner(
 }
 
 @Composable
-private fun PremiumStatsCard(
-    startTime: Long,
+private fun MinimalStatsCard(
+    elapsedMinutes: Long,
     totalSets: Int,
     totalVolume: Float,
-    routineName: String?,
-    modifier: Modifier = Modifier
+    weightUnit: WeightUnit,
+    routineName: String?
 ) {
-    val elapsedMinutes = remember(startTime) {
-        TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - startTime).toInt()
-    }
+    val shape = RoundedCornerShape(16.dp)
 
-    GlassCard(modifier = modifier.fillMaxWidth()) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .clip(shape)
+            .background(CardBackground)
+            .border(1.dp, CardBorder, shape)
+            .padding(16.dp)
+    ) {
         Column {
             if (routineName != null) {
                 Text(
                     text = routineName,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF9D8DF1),
+                    fontSize = 14.sp,
+                    color = TextSecondary,
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
             }
@@ -613,19 +461,18 @@ private fun PremiumStatsCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                PremiumStatItem(value = "$elapsedMinutes", label = "Minutes", color = Primary)
-                PremiumStatItem(value = "$totalSets", label = "Sets", color = Color(0xFF9D8DF1))
-                PremiumStatItem(value = "${totalVolume.toInt()}", label = "Volume", suffix = "kg", color = Color(0xFF4ECDC4))
+                StatItem(value = "$elapsedMinutes", label = "Minutes")
+                StatItem(value = "$totalSets", label = "Sets")
+                StatItem(value = "${totalVolume.toInt()}", label = "Volume", suffix = weightUnit.symbol)
             }
         }
     }
 }
 
 @Composable
-private fun PremiumStatItem(
+private fun StatItem(
     value: String,
     label: String,
-    color: Color,
     suffix: String? = null
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -634,13 +481,13 @@ private fun PremiumStatItem(
                 text = value,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
-                color = color
+                color = TextPrimary
             )
             if (suffix != null) {
                 Text(
                     text = suffix,
                     fontSize = 14.sp,
-                    color = color.copy(alpha = 0.7f),
+                    color = TextSecondary,
                     modifier = Modifier.padding(bottom = 4.dp, start = 2.dp)
                 )
             }
@@ -648,34 +495,28 @@ private fun PremiumStatItem(
         Text(
             text = label,
             fontSize = 12.sp,
-            color = Color.White.copy(alpha = 0.6f)
+            color = TextSecondary
         )
     }
 }
 
 @Composable
-private fun PremiumExerciseSetCard(
-    exerciseWithSets: ExerciseWithSets,
-    routineExercise: RoutineExercise?,
-    onDeleteSet: (WorkoutSet) -> Unit,
-    onAddSet: () -> Unit
+private fun ExerciseSetCard(
+    exerciseName: String,
+    exerciseId: Long,
+    sets: List<WorkoutSet>,
+    weightUnit: WeightUnit,
+    onAddSet: () -> Unit,
+    onDeleteSet: (WorkoutSet) -> Unit
 ) {
-    val cardShape = RoundedCornerShape(16.dp)
+    val shape = RoundedCornerShape(16.dp)
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(cardShape)
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(Color(0xFF1E1A3D), Color(0xFF151030))
-                )
-            )
-            .border(
-                width = 1.dp,
-                color = Color(0xFF3A3560).copy(alpha = 0.5f),
-                shape = cardShape
-            )
+            .clip(shape)
+            .background(CardBackground)
+            .border(1.dp, CardBorder, shape)
             .padding(16.dp)
     ) {
         Column {
@@ -684,24 +525,15 @@ private fun PremiumExerciseSetCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = exerciseWithSets.exerciseName,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                    if (routineExercise != null) {
-                        Text(
-                            text = "Target: ${routineExercise.targetSets} x ${routineExercise.targetReps}",
-                            fontSize = 13.sp,
-                            color = Color.White.copy(alpha = 0.5f)
-                        )
-                    }
-                }
+                Text(
+                    text = exerciseName,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = TextPrimary
+                )
                 Surface(
-                    shape = RoundedCornerShape(10.dp),
-                    color = Primary,
+                    shape = RoundedCornerShape(8.dp),
+                    color = CardBorder,
                     modifier = Modifier.clickable(onClick = onAddSet)
                 ) {
                     Row(
@@ -709,49 +541,87 @@ private fun PremiumExerciseSetCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            Icons.Default.Add,
+                            Icons.Outlined.Add,
                             contentDescription = null,
-                            tint = Color.White,
+                            tint = TextPrimary,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Set", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                        Text(
+                            "Set",
+                            fontSize = 13.sp,
+                            color = TextPrimary
+                        )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            if (sets.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(12.dp))
 
-            // Header
-            Row(modifier = Modifier.fillMaxWidth()) {
-                Text("SET", fontSize = 11.sp, color = Color.White.copy(alpha = 0.4f), modifier = Modifier.weight(1f))
-                Text("KG", fontSize = 11.sp, color = Color.White.copy(alpha = 0.4f), modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
-                Text("REPS", fontSize = 11.sp, color = Color.White.copy(alpha = 0.4f), modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
-                Spacer(modifier = Modifier.width(36.dp))
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            exerciseWithSets.sets.forEachIndexed { index, set ->
+                // Header
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(horizontal = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Surface(
-                        shape = CircleShape,
-                        color = Primary.copy(alpha = 0.2f),
-                        modifier = Modifier.size(28.dp)
+                    Text("SET", fontSize = 11.sp, color = TextSecondary, modifier = Modifier.width(40.dp))
+                    Text(weightUnit.symbol.uppercase(), fontSize = 11.sp, color = TextSecondary, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
+                    Text("REPS", fontSize = 11.sp, color = TextSecondary, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
+                    Spacer(modifier = Modifier.width(36.dp))
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                sets.forEachIndexed { index, set ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp, horizontal = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Text("${index + 1}", fontSize = 13.sp, color = Primary, fontWeight = FontWeight.SemiBold)
+                        Box(
+                            modifier = Modifier
+                                .size(28.dp)
+                                .clip(CircleShape)
+                                .background(CardBorder),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                "${index + 1}",
+                                fontSize = 12.sp,
+                                color = TextPrimary
+                            )
                         }
-                    }
-                    Text("${set.weight}", fontSize = 16.sp, color = Color.White, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
-                    Text("${set.reps}", fontSize = 16.sp, color = Color.White, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
-                    IconButton(onClick = { onDeleteSet(set) }, modifier = Modifier.size(36.dp)) {
-                        Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Primary.copy(alpha = 0.7f), modifier = Modifier.size(18.dp))
+                        Text(
+                            "${set.weight}",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = TextPrimary,
+                            modifier = Modifier.weight(1f),
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            "${set.reps}",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = TextPrimary,
+                            modifier = Modifier.weight(1f),
+                            textAlign = TextAlign.Center
+                        )
+                        IconButton(
+                            onClick = { onDeleteSet(set) },
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                Icons.Outlined.Delete,
+                                contentDescription = "Delete",
+                                tint = TextSecondary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -760,214 +630,262 @@ private fun PremiumExerciseSetCard(
 }
 
 @Composable
-private fun PremiumPendingExerciseCard(
+private fun PendingExerciseCard(
     routineExercise: RoutineExercise,
-    onClick: () -> Unit
+    onStart: () -> Unit
 ) {
-    val cardShape = RoundedCornerShape(16.dp)
+    val shape = RoundedCornerShape(12.dp)
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(cardShape)
-            .background(Color(0xFF1A1535).copy(alpha = 0.5f))
-            .border(1.dp, Color(0xFF3A3560).copy(alpha = 0.3f), cardShape)
-            .clickable(onClick = onClick)
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+            .clip(shape)
+            .background(CardBackground)
+            .border(1.dp, CardBorder, shape)
+            .clickable(onClick = onStart)
+            .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-            IconBadge(
-                icon = Icons.Default.FitnessCenter,
-                backgroundColor = Color(0xFF4ECDC4).copy(alpha = 0.15f),
-                iconColor = Color(0xFF4ECDC4),
-                size = 44.dp
-            )
-            Spacer(modifier = Modifier.width(12.dp))
-            Column {
-                Text(routineExercise.exercise.name, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = Color.White)
-                Text("${routineExercise.targetSets} x ${routineExercise.targetReps}", fontSize = 13.sp, color = Color.White.copy(alpha = 0.5f))
-            }
-        }
         Surface(
             shape = RoundedCornerShape(10.dp),
-            color = Color(0xFF4ECDC4),
-            modifier = Modifier.clickable(onClick = onClick)
+            color = CardBorder,
+            modifier = Modifier.size(40.dp)
         ) {
-            Row(modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Add, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
-                Spacer(modifier = Modifier.width(4.dp))
-                Text("Start", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    Icons.Outlined.FitnessCenter,
+                    contentDescription = null,
+                    tint = TextSecondary,
+                    modifier = Modifier.size(20.dp)
+                )
             }
+        }
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = routineExercise.exercise.name,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium,
+                color = TextPrimary
+            )
+            Text(
+                text = "${routineExercise.targetSets} sets · ${routineExercise.targetReps}",
+                fontSize = 13.sp,
+                color = TextSecondary
+            )
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MinimalAddButton(
+    text: String,
+    onClick: () -> Unit
+) {
+    val shape = RoundedCornerShape(12.dp)
+
+    Surface(
+        shape = shape,
+        color = CardBackground,
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, CardBorder, shape)
+            .clickable(onClick = onClick)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                Icons.Outlined.Add,
+                contentDescription = null,
+                tint = TextPrimary,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = text,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium,
+                color = TextPrimary
+            )
+        }
+    }
+}
+
 @Composable
 private fun AddSetBottomSheet(
-    exercise: Exercise,
-    onDismiss: () -> Unit,
-    onAddSet: (weight: Float, reps: Int, rpe: Int?) -> Unit
+    exerciseName: String,
+    weightUnit: WeightUnit,
+    onSave: (Float, Int, Int?) -> Unit,
+    onDismiss: () -> Unit
 ) {
     var weight by remember { mutableStateOf("") }
     var reps by remember { mutableStateOf("") }
     var rpe by remember { mutableStateOf("") }
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = rememberModalBottomSheetState(),
-        containerColor = Color(0xFF1A1432)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(20.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp)
+        Text(
+            text = exerciseName,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = TextPrimary
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text("Add Set", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
-            Text(exercise.name, fontSize = 16.sp, color = Color.White.copy(alpha = 0.6f))
+            MinimalTextField(
+                value = weight,
+                onValueChange = { weight = it },
+                label = "Weight (${weightUnit.symbol})",
+                modifier = Modifier.weight(1f)
+            )
+            MinimalTextField(
+                value = reps,
+                onValueChange = { reps = it },
+                label = "Reps",
+                modifier = Modifier.weight(1f)
+            )
+            MinimalTextField(
+                value = rpe,
+                onValueChange = { rpe = it },
+                label = "RPE",
+                modifier = Modifier.weight(1f)
+            )
+        }
 
-            Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("Weight (kg)", fontSize = 12.sp, color = Color.White.copy(alpha = 0.6f))
-                    Spacer(modifier = Modifier.height(8.dp))
-                    PremiumNumberField(value = weight, onValueChange = { weight = it })
-                }
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("Reps", fontSize = 12.sp, color = Color.White.copy(alpha = 0.6f))
-                    Spacer(modifier = Modifier.height(8.dp))
-                    PremiumNumberField(value = reps, onValueChange = { reps = it })
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text("RPE (optional)", fontSize = 12.sp, color = Color.White.copy(alpha = 0.6f))
-            Spacer(modifier = Modifier.height(8.dp))
-            PremiumNumberField(value = rpe, onValueChange = { rpe = it }, placeholder = "1-10")
-
-            Spacer(modifier = Modifier.height(24.dp))
-
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
             Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = if (weight.toFloatOrNull() != null && reps.toIntOrNull() != null) Primary else Color(0xFF2A2555),
+                shape = RoundedCornerShape(12.dp),
+                color = CardBackground,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(enabled = weight.toFloatOrNull() != null && reps.toIntOrNull() != null) {
-                        val w = weight.toFloatOrNull() ?: return@clickable
-                        val r = reps.toIntOrNull() ?: return@clickable
-                        val rpeValue = rpe.toIntOrNull()?.coerceIn(1, 10)
-                        onAddSet(w, r, rpeValue)
-                    }
+                    .weight(1f)
+                    .border(1.dp, CardBorder, RoundedCornerShape(12.dp))
+                    .clickable(onClick = onDismiss)
             ) {
                 Text(
-                    "Add Set",
-                    color = Color.White,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 16.sp,
+                    "Cancel",
+                    color = TextSecondary,
+                    fontWeight = FontWeight.Medium,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(16.dp)
                 )
             }
-
-            Spacer(modifier = Modifier.height(32.dp))
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = CardBorder,
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable {
+                        val w = weight.toFloatOrNull() ?: 0f
+                        val r = reps.toIntOrNull() ?: 0
+                        val rpeVal = rpe.toIntOrNull()
+                        onSave(w, r, rpeVal)
+                    }
+            ) {
+                Text(
+                    "Save Set",
+                    color = TextPrimary,
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
         }
+
+        Spacer(modifier = Modifier.height(32.dp))
     }
 }
 
 @Composable
-private fun PremiumNumberField(
+private fun MinimalTextField(
     value: String,
     onValueChange: (String) -> Unit,
-    placeholder: String = ""
+    label: String,
+    modifier: Modifier = Modifier
 ) {
     val shape = RoundedCornerShape(12.dp)
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(shape)
-            .background(Color(0xFF252047))
-            .border(1.dp, Color(0xFF3A3560).copy(alpha = 0.5f), shape)
-            .padding(horizontal = 16.dp, vertical = 14.dp)
-    ) {
-        if (value.isEmpty() && placeholder.isNotEmpty()) {
-            Text(placeholder, color = Color.White.copy(alpha = 0.3f), fontSize = 16.sp)
-        }
-        BasicTextField(
-            value = value,
-            onValueChange = onValueChange,
-            textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
-            singleLine = true,
-            cursorBrush = SolidColor(Primary),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            modifier = Modifier.fillMaxWidth()
+    Column(modifier = modifier) {
+        Text(
+            text = label,
+            fontSize = 12.sp,
+            color = TextSecondary,
+            modifier = Modifier.padding(bottom = 6.dp)
         )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(shape)
+                .background(CardBackground)
+                .border(1.dp, CardBorder, shape)
+                .padding(14.dp)
+        ) {
+            BasicTextField(
+                value = value,
+                onValueChange = onValueChange,
+                textStyle = TextStyle(
+                    color = TextPrimary,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Medium,
+                    textAlign = TextAlign.Center
+                ),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                cursorBrush = SolidColor(TextPrimary),
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 }
 
 @Composable
-private fun PremiumTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    placeholder: String = ""
-) {
-    val shape = RoundedCornerShape(12.dp)
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(shape)
-            .background(Color(0xFF252047))
-            .border(1.dp, Color(0xFF3A3560).copy(alpha = 0.5f), shape)
-            .padding(horizontal = 16.dp, vertical = 14.dp)
-    ) {
-        if (value.isEmpty() && placeholder.isNotEmpty()) {
-            Text(placeholder, color = Color.White.copy(alpha = 0.3f), fontSize = 16.sp)
-        }
-        BasicTextField(
-            value = value,
-            onValueChange = onValueChange,
-            textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
-            cursorBrush = SolidColor(Primary),
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
-}
-
-@Composable
-private fun PremiumDialog(
+private fun MinimalDialog(
     title: String,
-    content: @Composable () -> Unit,
-    onDismiss: () -> Unit,
-    onConfirm: () -> Unit,
+    message: String,
     confirmText: String,
-    dismissText: String,
-    isDestructive: Boolean = false
+    confirmColor: Color = TextPrimary,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = Color(0xFF1E1A3D),
-        title = { Text(title, color = Color.White, fontWeight = FontWeight.Bold) },
-        text = { content() },
+        containerColor = CardBackground,
+        titleContentColor = TextPrimary,
+        textContentColor = TextSecondary,
+        title = { Text(title) },
+        text = { Text(message) },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text(confirmText, color = if (isDestructive) Primary else Color(0xFF4ECDC4))
+                Text(confirmText, color = confirmColor)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(dismissText, color = Color.White.copy(alpha = 0.6f))
+                Text("Cancel", color = TextSecondary)
             }
         }
     )
 }
 
-private fun formatTime(totalSeconds: Int): String {
-    val minutes = totalSeconds / 60
-    val seconds = totalSeconds % 60
-    return "%d:%02d".format(minutes, seconds)
+private fun formatTime(seconds: Int): String {
+    val minutes = seconds / 60
+    val secs = seconds % 60
+    return "%d:%02d".format(minutes, secs)
 }

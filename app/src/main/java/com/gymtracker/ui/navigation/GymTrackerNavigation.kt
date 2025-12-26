@@ -1,35 +1,23 @@
 package com.gymtracker.ui.navigation
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.outlined.List
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.FitnessCenter
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.FitnessCenter
-import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.GridView
+import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -37,15 +25,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.gymtracker.ui.theme.Background
-import com.gymtracker.ui.theme.Primary
+import com.gymtracker.ui.theme.CardBorder
+import com.gymtracker.ui.theme.Surface
+import com.gymtracker.ui.theme.TextPrimary
+import com.gymtracker.ui.theme.TextSecondary
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -61,38 +48,35 @@ import com.gymtracker.ui.screens.exercises.ExercisesScreen
 import com.gymtracker.ui.screens.home.HomeScreen
 import com.gymtracker.ui.screens.routines.RoutineEditorScreen
 import com.gymtracker.ui.screens.routines.RoutinesScreen
+import com.gymtracker.ui.screens.settings.SettingsScreen
 import com.gymtracker.ui.screens.workout.WorkoutScreen
 import com.gymtracker.ui.screens.workout.WorkoutViewModel
+import com.gymtracker.ui.screens.workoutdetail.WorkoutDetailScreen
 
 sealed class Screen(
     val route: String,
     val title: String,
-    val selectedIcon: ImageVector,
-    val unselectedIcon: ImageVector
+    val icon: ImageVector
 ) {
     data object Home : Screen(
         route = "home",
         title = "Home",
-        selectedIcon = Icons.Filled.Home,
-        unselectedIcon = Icons.Outlined.Home
+        icon = Icons.Outlined.GridView
     )
     data object Workout : Screen(
         route = "workout",
         title = "Workout",
-        selectedIcon = Icons.Filled.FitnessCenter,
-        unselectedIcon = Icons.Outlined.FitnessCenter
+        icon = Icons.Outlined.FitnessCenter
     )
     data object Routines : Screen(
         route = "routines",
         title = "Routines",
-        selectedIcon = Icons.Filled.DateRange,
-        unselectedIcon = Icons.Outlined.DateRange
+        icon = Icons.Outlined.CalendarMonth
     )
     data object Exercises : Screen(
         route = "exercises",
         title = "Exercises",
-        selectedIcon = Icons.AutoMirrored.Filled.List,
-        unselectedIcon = Icons.AutoMirrored.Outlined.List
+        icon = Icons.AutoMirrored.Outlined.List
     )
 }
 
@@ -108,8 +92,11 @@ object Routes {
     const val EXERCISE_PICKER = "exercise_picker"
     const val ROUTINE_EDITOR = "routine_editor/{routineId}"
     const val ROUTINE_EXERCISE_PICKER = "routine_exercise_picker"
+    const val SETTINGS = "settings"
+    const val WORKOUT_DETAIL = "workout_detail/{workoutId}"
 
     fun routineEditor(routineId: Long = 0) = "routine_editor/$routineId"
+    fun workoutDetail(workoutId: Long) = "workout_detail/$workoutId"
 }
 
 @Composable
@@ -146,6 +133,12 @@ fun GymTrackerNavHost(
                             launchSingleTop = true
                             restoreState = true
                         }
+                    },
+                    onNavigateToSettings = {
+                        navController.navigate(Routes.SETTINGS)
+                    },
+                    onWorkoutClick = { workoutId ->
+                        navController.navigate(Routes.workoutDetail(workoutId))
                     }
                 )
             }
@@ -264,6 +257,31 @@ fun GymTrackerNavHost(
                     }
                 )
             }
+
+            // Settings Screen
+            composable(Routes.SETTINGS) {
+                SettingsScreen(
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+
+            // Workout Detail Screen
+            composable(
+                route = Routes.WORKOUT_DETAIL,
+                arguments = listOf(
+                    navArgument("workoutId") {
+                        type = NavType.LongType
+                    }
+                )
+            ) {
+                WorkoutDetailScreen(
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    }
+                )
+            }
         }
     }
 }
@@ -277,11 +295,13 @@ private fun GymTrackerBottomBar(navController: NavHostController) {
     val hideOnRoutes = listOf(
         Routes.EXERCISE_PICKER,
         Routes.ROUTINE_EXERCISE_PICKER,
-        "routine_editor"
+        Routes.SETTINGS,
+        "routine_editor",
+        "workout_detail"
     )
     if (hideOnRoutes.any { currentDestination?.route?.contains(it) == true }) return
 
-    FloatingGlassNavBar(
+    MinimalNavBar(
         items = bottomNavItems,
         currentRoute = currentDestination?.route,
         onItemClick = { screen ->
@@ -297,49 +317,37 @@ private fun GymTrackerBottomBar(navController: NavHostController) {
 }
 
 @Composable
-private fun FloatingGlassNavBar(
+private fun MinimalNavBar(
     items: List<Screen>,
     currentRoute: String?,
     onItemClick: (Screen) -> Unit
 ) {
-    val shape = RoundedCornerShape(28.dp)
+    val shape = RoundedCornerShape(20.dp)
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .background(Background)
-            .padding(horizontal = 20.dp, vertical = 16.dp)
+            .padding(horizontal = 24.dp, vertical = 20.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(shape)
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            Color(0xFF1E1A3D),
-                            Color(0xFF151030)
-                        )
-                    )
-                )
+                .background(Surface)
                 .border(
                     width = 1.dp,
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            Color(0xFF4A4570).copy(alpha = 0.6f),
-                            Color(0xFF2A2550).copy(alpha = 0.3f)
-                        )
-                    ),
+                    color = CardBorder,
                     shape = shape
                 )
-                .padding(horizontal = 8.dp, vertical = 12.dp),
+                .padding(horizontal = 16.dp, vertical = 16.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
             items.forEach { screen ->
                 val selected = currentRoute == screen.route
 
-                FloatingNavItem(
+                MinimalNavItem(
                     screen = screen,
                     selected = selected,
                     onClick = { onItemClick(screen) }
@@ -350,66 +358,28 @@ private fun FloatingGlassNavBar(
 }
 
 @Composable
-private fun FloatingNavItem(
+private fun MinimalNavItem(
     screen: Screen,
     selected: Boolean,
     onClick: () -> Unit
 ) {
-    val scale by animateFloatAsState(
-        targetValue = if (selected) 1.1f else 1f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
-        label = "scale"
-    )
+    val iconColor = if (selected) TextPrimary else TextSecondary
 
-    val iconColor by animateColorAsState(
-        targetValue = if (selected) Primary else Color.White.copy(alpha = 0.5f),
-        label = "iconColor"
-    )
-
-    val textColor by animateColorAsState(
-        targetValue = if (selected) Primary else Color.White.copy(alpha = 0.4f),
-        label = "textColor"
-    )
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
+    Box(
+        contentAlignment = Alignment.Center,
         modifier = Modifier
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = onClick
             )
-            .padding(horizontal = 12.dp, vertical = 4.dp)
-            .scale(scale)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         Icon(
-            imageVector = if (selected) screen.selectedIcon else screen.unselectedIcon,
+            imageVector = screen.icon,
             contentDescription = screen.title,
             tint = iconColor,
             modifier = Modifier.size(24.dp)
         )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = screen.title,
-            fontSize = 11.sp,
-            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-            color = textColor
-        )
-
-        // Indicator dot
-        if (selected) {
-            Spacer(modifier = Modifier.height(4.dp))
-            Box(
-                modifier = Modifier
-                    .size(4.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(Primary)
-            )
-        } else {
-            Spacer(modifier = Modifier.height(8.dp))
-        }
     }
 }

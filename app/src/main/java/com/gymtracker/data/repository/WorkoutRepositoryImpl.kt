@@ -113,6 +113,16 @@ class WorkoutRepositoryImpl @Inject constructor(
         return workoutDao.getWorkoutCountSince(calendar.timeInMillis)
     }
 
+    override suspend fun getWeeklyVolume(): Float {
+        val calendar = Calendar.getInstance()
+        calendar.add(Calendar.DAY_OF_YEAR, -7)
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        return workoutDao.getVolumeSince(calendar.timeInMillis)
+    }
+
     // Mapper functions
     private fun WorkoutEntity.toDomain(): Workout = Workout(
         id = id,

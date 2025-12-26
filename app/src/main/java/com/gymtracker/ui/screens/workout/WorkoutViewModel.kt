@@ -2,11 +2,14 @@ package com.gymtracker.ui.screens.workout
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.gymtracker.domain.model.AppSettings
 import com.gymtracker.domain.model.Exercise
 import com.gymtracker.domain.model.RoutineExercise
+import com.gymtracker.domain.model.WeightUnit
 import com.gymtracker.domain.model.WorkoutSet
 import com.gymtracker.domain.repository.ExerciseRepository
 import com.gymtracker.domain.repository.RoutineRepository
+import com.gymtracker.domain.repository.SettingsRepository
 import com.gymtracker.domain.repository.WorkoutRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -23,7 +26,8 @@ import javax.inject.Inject
 class WorkoutViewModel @Inject constructor(
     private val workoutRepository: WorkoutRepository,
     private val exerciseRepository: ExerciseRepository,
-    private val routineRepository: RoutineRepository
+    private val routineRepository: RoutineRepository,
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
     private val _workoutId = MutableStateFlow<Long?>(null)
@@ -45,6 +49,22 @@ class WorkoutViewModel @Inject constructor(
 
     val routineExercises: StateFlow<List<RoutineExercise>> = _routineExercises
     val routineName: StateFlow<String?> = _routineName
+
+    val weightUnit: StateFlow<WeightUnit> = settingsRepository.getSettings()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = AppSettings()
+        )
+        .let { flow ->
+            MutableStateFlow(WeightUnit.KG).also { unitFlow ->
+                viewModelScope.launch {
+                    flow.collect { settings ->
+                        unitFlow.value = settings.weightUnit
+                    }
+                }
+            }
+        }
 
     val uiState: StateFlow<WorkoutUiState> = combine(
         _workoutId,
@@ -127,6 +147,16 @@ class WorkoutViewModel @Inject constructor(
     fun selectExercise(exercise: Exercise) {
         _selectedExercise.value = exercise
         _isAddingSet.value = true
+    }
+
+    fun selectExerciseById(exerciseId: Long, exerciseName: String) {
+        viewModelScope.launch {
+            val exercise = exerciseRepository.getExerciseById(exerciseId)
+            if (exercise != null) {
+                _selectedExercise.value = exercise
+                _isAddingSet.value = true
+            }
+        }
     }
 
     fun clearSelectedExercise() {

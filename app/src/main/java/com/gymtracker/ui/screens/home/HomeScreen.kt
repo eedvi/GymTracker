@@ -1,6 +1,8 @@
 package com.gymtracker.ui.screens.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,13 +17,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FitnessCenter
-import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,7 +31,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -37,14 +38,11 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gymtracker.domain.model.Workout
-import com.gymtracker.ui.components.GlassCard
-import com.gymtracker.ui.components.GradientCard
-import com.gymtracker.ui.components.IconBadge
-import com.gymtracker.ui.components.PremiumListItem
-import com.gymtracker.ui.components.SectionHeader
-import com.gymtracker.ui.components.StatDisplay
 import com.gymtracker.ui.theme.Background
-import com.gymtracker.ui.theme.Primary
+import com.gymtracker.ui.theme.CardBackground
+import com.gymtracker.ui.theme.CardBorder
+import com.gymtracker.ui.theme.TextPrimary
+import com.gymtracker.ui.theme.TextSecondary
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -54,6 +52,8 @@ import java.util.concurrent.TimeUnit
 fun HomeScreen(
     onStartWorkout: () -> Unit,
     onContinueWorkout: () -> Unit,
+    onNavigateToSettings: () -> Unit,
+    onWorkoutClick: (Long) -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -68,63 +68,189 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(color = Primary)
+                CircularProgressIndicator(color = TextPrimary)
             }
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(20.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 // Header
                 item {
-                    Text(
-                        text = "GymTracker",
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Workouts",
+                            fontSize = 34.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TextPrimary
+                        )
+                        MinimalIconButton(
+                            icon = Icons.Outlined.Settings,
+                            onClick = onNavigateToSettings
+                        )
+                    }
                 }
 
-                // Hero Card
+                // Active Workout or Quick Start Cards
                 item {
-                    HeroCard(
-                        hasActiveWorkout = uiState.hasActiveWorkout,
-                        onStartWorkout = onStartWorkout,
-                        onContinueWorkout = onContinueWorkout
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        if (uiState.hasActiveWorkout) {
+                            // Continue Session Card
+                            MinimalCard(
+                                modifier = Modifier.weight(1f),
+                                onClick = onContinueWorkout
+                            ) {
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    // Progress ring placeholder
+                                    Box(
+                                        modifier = Modifier
+                                            .size(48.dp)
+                                            .border(2.dp, TextSecondary, CircleShape),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            Icons.Outlined.PlayArrow,
+                                            contentDescription = null,
+                                            tint = TextPrimary,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(40.dp))
+                                    Text(
+                                        text = "Continue Session",
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = TextPrimary
+                                    )
+                                    Text(
+                                        text = "Tap to resume",
+                                        fontSize = 13.sp,
+                                        color = TextSecondary
+                                    )
+                                }
+                            }
+                        } else {
+                            // Start Workout Card
+                            MinimalCard(
+                                modifier = Modifier.weight(1f),
+                                onClick = onStartWorkout
+                            ) {
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(48.dp)
+                                            .border(2.dp, TextSecondary, CircleShape),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = "+",
+                                            fontSize = 24.sp,
+                                            color = TextPrimary
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(40.dp))
+                                    Text(
+                                        text = "Start Workout",
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = TextPrimary
+                                    )
+                                    Text(
+                                        text = "New session",
+                                        fontSize = 13.sp,
+                                        color = TextSecondary
+                                    )
+                                }
+                            }
+                        }
+
+                        // Stats Card
+                        MinimalCard(modifier = Modifier.weight(1f)) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text(
+                                    text = "${uiState.workoutsThisWeek}",
+                                    fontSize = 40.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = TextPrimary
+                                )
+                                Spacer(modifier = Modifier.height(32.dp))
+                                Text(
+                                    text = "Workouts",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = TextPrimary
+                                )
+                                Text(
+                                    text = "This week",
+                                    fontSize = 13.sp,
+                                    color = TextSecondary
+                                )
+                            }
+                        }
+                    }
                 }
 
-                // Stats Card
+                // Volume Stats Card
                 item {
-                    StatsCard(
-                        workoutsThisWeek = uiState.workoutsThisWeek,
-                        totalWorkouts = uiState.recentWorkouts.size
-                    )
+                    MinimalCard(modifier = Modifier.fillMaxWidth()) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(
+                                    text = "Volume lifted",
+                                    fontSize = 14.sp,
+                                    color = TextSecondary
+                                )
+                                Text(
+                                    text = "Last 7 days",
+                                    fontSize = 12.sp,
+                                    color = TextSecondary.copy(alpha = 0.6f)
+                                )
+                            }
+                            Text(
+                                text = "${uiState.weeklyVolume.toInt()} ${uiState.weightUnit.symbol}",
+                                fontSize = 28.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = TextPrimary
+                            )
+                        }
+                    }
                 }
 
-                // Recent Workouts Section
+                // Recent Workouts
                 if (uiState.recentWorkouts.isNotEmpty()) {
                     item {
-                        SectionHeader(
-                            title = "Recent Workouts",
-                            action = "See all",
-                            onActionClick = { /* TODO */ },
+                        Text(
+                            text = "Recent",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = TextPrimary,
                             modifier = Modifier.padding(top = 8.dp)
                         )
                     }
 
-                    items(uiState.recentWorkouts.take(5), key = { it.id }) { workout ->
-                        WorkoutHistoryItem(workout = workout)
-                    }
-                } else {
-                    item {
-                        EmptyStateCard()
+                    items(uiState.recentWorkouts.take(5)) { workout ->
+                        MinimalWorkoutItem(
+                            workout = workout,
+                            onClick = { onWorkoutClick(workout.id) }
+                        )
                     }
                 }
 
-                // Bottom spacing
+                // Bottom spacing for nav bar
                 item {
                     Spacer(modifier = Modifier.height(80.dp))
                 }
@@ -134,179 +260,96 @@ fun HomeScreen(
 }
 
 @Composable
-private fun HeroCard(
-    hasActiveWorkout: Boolean,
-    onStartWorkout: () -> Unit,
-    onContinueWorkout: () -> Unit
+private fun MinimalIconButton(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    onClick: () -> Unit
 ) {
-    GradientCard(
-        gradientColors = if (hasActiveWorkout) {
-            listOf(Color(0xFFFF6B6B), Color(0xFFFF8E8E))
-        } else {
-            listOf(Color(0xFF6C5CE7), Color(0xFF8E7CF3))
-        },
-        onClick = if (hasActiveWorkout) onContinueWorkout else onStartWorkout,
-        modifier = Modifier.fillMaxWidth()
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = CardBackground,
+        modifier = Modifier
+            .size(44.dp)
+            .border(1.dp, CardBorder, RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick)
     ) {
-        Column {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
-            ) {
-                Column {
-                    Text(
-                        text = if (hasActiveWorkout) "Workout Active" else "Ready to Train?",
-                        fontSize = 14.sp,
-                        color = Color.White.copy(alpha = 0.8f)
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = if (hasActiveWorkout) "Continue Session" else "Start Workout",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = Color.White.copy(alpha = 0.2f),
-                    modifier = Modifier.size(48.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = if (hasActiveWorkout) Icons.Default.PlayArrow else Icons.Default.FitnessCenter,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Progress indicator or CTA
-            Row(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color.White.copy(alpha = 0.2f))
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.PlayArrow,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = if (hasActiveWorkout) "Tap to continue" else "Tap to begin",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color.White
-                )
-            }
+        Box(contentAlignment = Alignment.Center) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = TextPrimary,
+                modifier = Modifier.size(20.dp)
+            )
         }
     }
 }
 
-
 @Composable
-private fun StatsCard(
-    workoutsThisWeek: Int,
-    totalWorkouts: Int
+private fun MinimalCard(
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
+    content: @Composable () -> Unit
 ) {
-    GlassCard(modifier = Modifier.fillMaxWidth()) {
-        Column {
-            Text(
-                text = "This Week",
-                fontSize = 14.sp,
-                color = Color.White.copy(alpha = 0.6f)
+    val shape = RoundedCornerShape(16.dp)
+
+    Box(
+        modifier = modifier
+            .clip(shape)
+            .background(CardBackground)
+            .border(1.dp, CardBorder, shape)
+            .then(
+                if (onClick != null) Modifier.clickable(onClick = onClick)
+                else Modifier
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround
-            ) {
-                StatDisplay(
-                    value = "$workoutsThisWeek",
-                    label = "Workouts",
-                    valueColor = Primary
-                )
-                StatDisplay(
-                    value = "0",
-                    label = "Sets",
-                    valueColor = Color(0xFF9D8DF1)
-                )
-                StatDisplay(
-                    value = "0",
-                    label = "Volume",
-                    suffix = "kg",
-                    valueColor = Color(0xFF4ECDC4)
-                )
-            }
-        }
+    ) {
+        content()
     }
 }
 
 @Composable
-private fun WorkoutHistoryItem(workout: Workout) {
+private fun MinimalWorkoutItem(
+    workout: Workout,
+    onClick: () -> Unit
+) {
     val dateFormat = SimpleDateFormat("EEE, MMM d", Locale.getDefault())
-    val duration = workout.endTime?.let { end ->
-        val durationMs = end - workout.startTime
-        TimeUnit.MILLISECONDS.toMinutes(durationMs).toInt()
-    } ?: 0
+    val durationMinutes = workout.endTime?.let {
+        TimeUnit.MILLISECONDS.toMinutes(it - workout.startTime)
+    } ?: TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - workout.startTime)
 
-    PremiumListItem(
-        title = dateFormat.format(Date(workout.startTime)),
-        subtitle = workout.notes ?: "${duration} minutes",
-        leadingIcon = {
-            IconBadge(
-                icon = Icons.Default.FitnessCenter,
-                backgroundColor = Primary.copy(alpha = 0.15f),
-                iconColor = Primary
-            )
-        },
-        trailingContent = {
-            Text(
-                text = "${duration}min",
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
-                color = Color.White.copy(alpha = 0.6f)
-            )
-        }
-    )
-}
-
-@Composable
-private fun EmptyStateCard() {
-    GlassCard(modifier = Modifier.fillMaxWidth()) {
-        Column(
+    MinimalCard(modifier = Modifier.fillMaxWidth(), onClick = onClick) {
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.Default.FitnessCenter,
-                contentDescription = null,
-                tint = Color.White.copy(alpha = 0.3f),
-                modifier = Modifier.size(48.dp)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // Circle indicator
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(TextSecondary)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
+                    Text(
+                        text = dateFormat.format(Date(workout.startTime)),
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = TextPrimary
+                    )
+                    Text(
+                        text = "$durationMinutes minutes",
+                        fontSize = 13.sp,
+                        color = TextSecondary
+                    )
+                }
+            }
             Text(
-                text = "No workouts yet",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Medium,
-                color = Color.White.copy(alpha = 0.8f)
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Start your first workout to track your progress",
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.White.copy(alpha = 0.5f)
+                text = "${durationMinutes}min",
+                fontSize = 14.sp,
+                color = TextSecondary
             )
         }
     }

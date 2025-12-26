@@ -22,8 +22,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.DirectionsRun
 import androidx.compose.material.icons.outlined.FitnessCenter
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.SelfImprovement
+import androidx.compose.material.icons.outlined.SportsGymnastics
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -306,6 +310,7 @@ private fun MinimalExerciseCard(
     onClick: () -> Unit
 ) {
     val cardShape = RoundedCornerShape(12.dp)
+    val categoryIcon = getCategoryIcon(exercise.category)
 
     Row(
         modifier = Modifier
@@ -317,23 +322,23 @@ private fun MinimalExerciseCard(
             .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Icon
+        // Category Icon
         Surface(
             shape = RoundedCornerShape(10.dp),
             color = CardBorder,
-            modifier = Modifier.size(40.dp)
+            modifier = Modifier.size(44.dp)
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
-                    imageVector = Icons.Outlined.FitnessCenter,
+                    imageVector = categoryIcon,
                     contentDescription = null,
                     tint = TextPrimary,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(22.dp)
                 )
             }
         }
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(14.dp))
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
@@ -342,12 +347,45 @@ private fun MinimalExerciseCard(
                 fontWeight = FontWeight.Medium,
                 color = TextPrimary
             )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = "${exercise.muscleGroups.joinToString(", ")} · ${exercise.equipment.displayName}",
-                fontSize = 13.sp,
-                color = TextSecondary
-            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Primary muscle
+                Text(
+                    text = exercise.muscleGroups.firstOrNull() ?: "",
+                    fontSize = 12.sp,
+                    color = TextSecondary
+                )
+                if (exercise.muscleGroups.size > 1) {
+                    Text(
+                        text = "+${exercise.muscleGroups.size - 1}",
+                        fontSize = 11.sp,
+                        color = TextSecondary.copy(alpha = 0.6f)
+                    )
+                }
+                Text(
+                    text = "·",
+                    fontSize = 12.sp,
+                    color = TextSecondary.copy(alpha = 0.4f)
+                )
+                Text(
+                    text = exercise.equipment.displayName,
+                    fontSize = 12.sp,
+                    color = TextSecondary
+                )
+            }
         }
+    }
+}
+
+private fun getCategoryIcon(category: ExerciseCategory): ImageVector {
+    return when (category) {
+        ExerciseCategory.PUSH -> Icons.Outlined.FitnessCenter
+        ExerciseCategory.PULL -> Icons.Outlined.FitnessCenter
+        ExerciseCategory.LEGS -> Icons.Outlined.SportsGymnastics
+        ExerciseCategory.CORE -> Icons.Outlined.SelfImprovement
+        ExerciseCategory.CARDIO -> Icons.AutoMirrored.Outlined.DirectionsRun
     }
 }

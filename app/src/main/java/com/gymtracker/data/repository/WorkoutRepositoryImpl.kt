@@ -5,6 +5,8 @@ import com.gymtracker.data.local.entity.WorkoutEntity
 import com.gymtracker.data.local.entity.WorkoutSetEntity
 import com.gymtracker.domain.model.Workout
 import com.gymtracker.domain.model.WorkoutSet
+import com.gymtracker.domain.repository.ExerciseHistoryItem
+import com.gymtracker.domain.repository.SetData
 import com.gymtracker.domain.repository.WorkoutRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -121,6 +123,34 @@ class WorkoutRepositoryImpl @Inject constructor(
         calendar.set(Calendar.SECOND, 0)
         calendar.set(Calendar.MILLISECOND, 0)
         return workoutDao.getVolumeSince(calendar.timeInMillis)
+    }
+
+    override fun getExerciseHistory(exerciseId: Long): Flow<List<ExerciseHistoryItem>> {
+        return workoutDao.getExerciseHistory(exerciseId).map { entries ->
+            entries.groupBy { it.workoutId }
+                .map { (workoutId, sets) ->
+                    ExerciseHistoryItem(
+                        workoutId = workoutId,
+                        workoutDate = sets.firstOrNull()?.workoutDate ?: 0L,
+                        sets = sets.map { set ->
+                            SetData(
+                                weight = set.weight,
+                                reps = set.reps,
+                                rpe = set.rpe
+                            )
+                        }
+                    )
+                }
+                .sortedByDescending { it.workoutDate }
+        }
+    }
+
+    override suspend fun getExerciseWorkoutCount(exerciseId: Long): Int {
+        return workoutDao.getExerciseWorkoutCount(exerciseId)
+    }
+
+    override suspend fun getExerciseTotalVolume(exerciseId: Long): Float {
+        return workoutDao.getExerciseTotalVolume(exerciseId) ?: 0f
     }
 
     // Mapper functions

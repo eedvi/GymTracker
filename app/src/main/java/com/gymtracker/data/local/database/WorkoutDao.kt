@@ -67,6 +67,32 @@ interface WorkoutDao {
     """)
     suspend fun getPersonalRecord(exerciseId: Long): Float?
 
+    @Query("""
+        SELECT ws.*, e.name as exerciseName, w.startTime as workoutDate
+        FROM workout_sets ws
+        INNER JOIN exercises e ON ws.exerciseId = e.id
+        INNER JOIN workouts w ON ws.workoutId = w.id
+        WHERE ws.exerciseId = :exerciseId AND w.endTime IS NOT NULL
+        ORDER BY w.startTime DESC
+    """)
+    fun getExerciseHistory(exerciseId: Long): Flow<List<ExerciseHistoryEntry>>
+
+    @Query("""
+        SELECT COUNT(DISTINCT ws.workoutId)
+        FROM workout_sets ws
+        INNER JOIN workouts w ON ws.workoutId = w.id
+        WHERE ws.exerciseId = :exerciseId AND w.endTime IS NOT NULL
+    """)
+    suspend fun getExerciseWorkoutCount(exerciseId: Long): Int
+
+    @Query("""
+        SELECT SUM(ws.weight * ws.reps)
+        FROM workout_sets ws
+        INNER JOIN workouts w ON ws.workoutId = w.id
+        WHERE ws.exerciseId = :exerciseId AND w.endTime IS NOT NULL
+    """)
+    suspend fun getExerciseTotalVolume(exerciseId: Long): Float?
+
     @Query("SELECT COUNT(*) FROM workouts WHERE startTime >= :since")
     suspend fun getWorkoutCountSince(since: Long): Int
 
@@ -88,4 +114,16 @@ data class WorkoutSetWithExercise(
     val reps: Int,
     val rpe: Int?,
     val exerciseName: String
+)
+
+data class ExerciseHistoryEntry(
+    val id: Long,
+    val workoutId: Long,
+    val exerciseId: Long,
+    val setNumber: Int,
+    val weight: Float,
+    val reps: Int,
+    val rpe: Int?,
+    val exerciseName: String,
+    val workoutDate: Long
 )

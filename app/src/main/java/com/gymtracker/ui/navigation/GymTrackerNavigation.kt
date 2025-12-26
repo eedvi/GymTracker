@@ -52,6 +52,7 @@ import com.gymtracker.ui.screens.settings.SettingsScreen
 import com.gymtracker.ui.screens.workout.WorkoutScreen
 import com.gymtracker.ui.screens.workout.WorkoutViewModel
 import com.gymtracker.ui.screens.workoutdetail.WorkoutDetailScreen
+import com.gymtracker.ui.screens.exercises.ExerciseDetailScreen
 
 sealed class Screen(
     val route: String,
@@ -94,9 +95,11 @@ object Routes {
     const val ROUTINE_EXERCISE_PICKER = "routine_exercise_picker"
     const val SETTINGS = "settings"
     const val WORKOUT_DETAIL = "workout_detail/{workoutId}"
+    const val EXERCISE_DETAIL = "exercise_detail/{exerciseId}"
 
     fun routineEditor(routineId: Long = 0) = "routine_editor/$routineId"
     fun workoutDetail(workoutId: Long) = "workout_detail/$workoutId"
+    fun exerciseDetail(exerciseId: Long) = "exercise_detail/$exerciseId"
 }
 
 @Composable
@@ -222,8 +225,8 @@ fun GymTrackerNavHost(
             // Exercises Screen (browse)
             composable(Screen.Exercises.route) {
                 ExercisesScreen(
-                    onExerciseClick = { _ ->
-                        // In browse mode, show details (not implemented yet)
+                    onExerciseClick = { exercise ->
+                        navController.navigate(Routes.exerciseDetail(exercise.id))
                     }
                 )
             }
@@ -282,6 +285,22 @@ fun GymTrackerNavHost(
                     }
                 )
             }
+
+            // Exercise Detail Screen
+            composable(
+                route = Routes.EXERCISE_DETAIL,
+                arguments = listOf(
+                    navArgument("exerciseId") {
+                        type = NavType.LongType
+                    }
+                )
+            ) {
+                ExerciseDetailScreen(
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    }
+                )
+            }
         }
     }
 }
@@ -297,7 +316,8 @@ private fun GymTrackerBottomBar(navController: NavHostController) {
         Routes.ROUTINE_EXERCISE_PICKER,
         Routes.SETTINGS,
         "routine_editor",
-        "workout_detail"
+        "workout_detail",
+        "exercise_detail"
     )
     if (hideOnRoutes.any { currentDestination?.route?.contains(it) == true }) return
 

@@ -109,6 +109,15 @@ class WorkoutViewModel @Inject constructor(
                 _workoutId.value = activeWorkout.id
                 _workoutStartTime.value = activeWorkout.startTime
                 loadWorkoutSets(activeWorkout.id)
+
+                // Restore routine info if workout was started from a routine
+                activeWorkout.routineId?.let { routineId ->
+                    val routine = routineRepository.getRoutineWithExercises(routineId)
+                    if (routine != null) {
+                        _routineExercises.value = routine.exercises
+                        _routineName.value = routine.name
+                    }
+                }
             }
         }
     }

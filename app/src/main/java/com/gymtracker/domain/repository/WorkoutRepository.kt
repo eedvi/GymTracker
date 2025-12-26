@@ -18,4 +18,21 @@ interface WorkoutRepository {
     suspend fun getPersonalRecord(exerciseId: Long): Float?
     suspend fun getWorkoutCountThisWeek(): Int
     suspend fun getWeeklyVolume(): Float
+
+    // Exercise stats
+    fun getExerciseHistory(exerciseId: Long): Flow<List<ExerciseHistoryItem>>
+    suspend fun getExerciseWorkoutCount(exerciseId: Long): Int
+    suspend fun getExerciseTotalVolume(exerciseId: Long): Float
 }
+
+data class ExerciseHistoryItem(
+    val workoutId: Long,
+    val workoutDate: Long,
+    val sets: List<SetData>
+)
+
+data class SetData(
+    val weight: Float,
+    val reps: Int,
+    val rpe: Int?
+)

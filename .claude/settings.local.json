@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(./gradlew assembleDebug:*)"
+      "Bash(./gradlew assembleDebug:*)",
+      "Bash(./gradlew installDebug:*)",
+      "Bash(adb shell:*)",
+      "Bash(\"$ANDROID_HOME/platform-tools/adb\" shell am start -n com.gymtracker/.MainActivity)",
+      "Bash(\"$LOCALAPPDATA/Android/Sdk/platform-tools/adb\" shell am start -n com.gymtracker/.MainActivity)",
+      "WebSearch"
     ]
   }
 }

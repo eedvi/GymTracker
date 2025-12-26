@@ -4,20 +4,31 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Dumbbell icon -->
+
+    <!-- Minimalist Dumbbell Icon -->
+    <!-- Left weight plate (outer) -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M30,48 L30,60 L35,60 L35,48 Z"/>
+        android:pathData="M28,38 L28,70 L34,70 L34,38 Z"/>
+
+    <!-- Left weight plate (inner) -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M73,48 L73,60 L78,60 L78,48 Z"/>
+        android:pathData="M34,42 L34,66 L38,66 L38,42 Z"/>
+
+    <!-- Bar -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M25,44 L25,64 L32,64 L32,44 Z"/>
+        android:pathData="M38,50 L70,50 L70,58 L38,58 Z"/>
+
+    <!-- Right weight plate (inner) -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M76,44 L76,64 L83,64 L83,44 Z"/>
+        android:pathData="M70,42 L70,66 L74,66 L74,42 Z"/>
+
+    <!-- Right weight plate (outer) -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M35,51 L73,51 L73,57 L35,57 Z"/>
+        android:pathData="M74,38 L74,70 L80,70 L80,38 Z"/>
+
 </vector>

@@ -25,9 +25,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.gymtracker.R
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gymtracker.domain.model.Language
 import com.gymtracker.domain.model.WeightUnit
@@ -77,7 +79,7 @@ fun SettingsScreen(
                 }
 
                 Text(
-                    text = "Settings",
+                    text = stringResource(R.string.settings_title),
                     fontSize = 34.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextPrimary
@@ -95,10 +97,10 @@ fun SettingsScreen(
             ) {
                 // Language Setting
                 SettingRow(
-                    label = "Language",
+                    label = stringResource(R.string.settings_language),
                     options = listOf(
                         OptionItem("EN", Language.ENGLISH),
-                        OptionItem("ESP", Language.SPANISH)
+                        OptionItem("ES", Language.SPANISH)
                     ),
                     selectedOption = settings.language,
                     onOptionSelected = { viewModel.setLanguage(it) }
@@ -106,7 +108,7 @@ fun SettingsScreen(
 
                 // Weight Unit Setting
                 SettingRow(
-                    label = "Weight Unit",
+                    label = stringResource(R.string.settings_weight_unit),
                     options = listOf(
                         OptionItem("kg", WeightUnit.KG),
                         OptionItem("lb", WeightUnit.LBS)

@@ -32,10 +32,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.gymtracker.R
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gymtracker.domain.model.Workout
 import com.gymtracker.ui.theme.Background
@@ -84,7 +86,7 @@ fun HomeScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Workouts",
+                            text = stringResource(R.string.home_title),
                             fontSize = 34.sp,
                             fontWeight = FontWeight.Bold,
                             color = TextPrimary
@@ -125,13 +127,13 @@ fun HomeScreen(
                                     }
                                     Spacer(modifier = Modifier.height(40.dp))
                                     Text(
-                                        text = "Continue Session",
+                                        text = stringResource(R.string.home_continue_session),
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.SemiBold,
                                         color = TextPrimary
                                     )
                                     Text(
-                                        text = "Tap to resume",
+                                        text = stringResource(R.string.home_tap_to_resume),
                                         fontSize = 13.sp,
                                         color = TextSecondary
                                     )
@@ -158,13 +160,13 @@ fun HomeScreen(
                                     }
                                     Spacer(modifier = Modifier.height(40.dp))
                                     Text(
-                                        text = "Start Workout",
+                                        text = stringResource(R.string.home_start_workout),
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.SemiBold,
                                         color = TextPrimary
                                     )
                                     Text(
-                                        text = "New session",
+                                        text = stringResource(R.string.home_new_session),
                                         fontSize = 13.sp,
                                         color = TextSecondary
                                     )
@@ -183,13 +185,13 @@ fun HomeScreen(
                                 )
                                 Spacer(modifier = Modifier.height(32.dp))
                                 Text(
-                                    text = "Workouts",
+                                    text = stringResource(R.string.home_workouts),
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = TextPrimary
                                 )
                                 Text(
-                                    text = "This week",
+                                    text = stringResource(R.string.home_this_week),
                                     fontSize = 13.sp,
                                     color = TextSecondary
                                 )
@@ -210,12 +212,12 @@ fun HomeScreen(
                         ) {
                             Column {
                                 Text(
-                                    text = "Volume lifted",
+                                    text = stringResource(R.string.home_volume_lifted),
                                     fontSize = 14.sp,
                                     color = TextSecondary
                                 )
                                 Text(
-                                    text = "Last 7 days",
+                                    text = stringResource(R.string.home_last_7_days),
                                     fontSize = 12.sp,
                                     color = TextSecondary.copy(alpha = 0.6f)
                                 )
@@ -234,7 +236,7 @@ fun HomeScreen(
                 if (uiState.recentWorkouts.isNotEmpty()) {
                     item {
                         Text(
-                            text = "Recent",
+                            text = stringResource(R.string.home_recent),
                             fontSize = 20.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = TextPrimary,
@@ -340,14 +342,14 @@ private fun MinimalWorkoutItem(
                         color = TextPrimary
                     )
                     Text(
-                        text = "$durationMinutes minutes",
+                        text = stringResource(R.string.home_minutes, durationMinutes),
                         fontSize = 13.sp,
                         color = TextSecondary
                     )
                 }
             }
             Text(
-                text = "${durationMinutes}min",
+                text = stringResource(R.string.home_min, durationMinutes),
                 fontSize = 14.sp,
                 color = TextSecondary
             )

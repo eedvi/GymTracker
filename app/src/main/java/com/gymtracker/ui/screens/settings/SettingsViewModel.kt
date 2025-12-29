@@ -6,6 +6,7 @@ import com.gymtracker.domain.model.AppSettings
 import com.gymtracker.domain.model.Language
 import com.gymtracker.domain.model.WeightUnit
 import com.gymtracker.domain.repository.SettingsRepository
+import com.gymtracker.util.LocaleHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -28,6 +29,7 @@ class SettingsViewModel @Inject constructor(
     fun setLanguage(language: Language) {
         viewModelScope.launch {
             settingsRepository.setLanguage(language)
+            LocaleHelper.setLocale(language)
         }
     }
 

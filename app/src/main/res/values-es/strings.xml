@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">GymTracker</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Inicio</string>
+    <string name="nav_workout">Entreno</string>
+    <string name="nav_routines">Rutinas</string>
+    <string name="nav_exercises">Ejercicios</string>
+
+    <!-- Home Screen -->
+    <string name="home_title">Entrenamientos</string>
+    <string name="home_start_workout">Iniciar Entreno</string>
+    <string name="home_new_session">Nueva sesión</string>
+    <string name="home_continue_session">Continuar Sesión</string>
+    <string name="home_tap_to_resume">Toca para continuar</string>
+    <string name="home_workouts">Entrenos</string>
+    <string name="home_this_week">Esta semana</string>
+    <string name="home_volume_lifted">Volumen levantado</string>
+    <string name="home_last_7_days">Últimos 7 días</string>
+    <string name="home_recent">Recientes</string>
+    <string name="home_minutes">%1$d minutos</string>
+    <string name="home_min">%1$dmin</string>
+
+    <!-- Workout Screen -->
+    <string name="workout_title">Entreno</string>
+    <string name="workout_no_active">Sin entreno activo</string>
+    <string name="workout_start_new">Iniciar un nuevo entreno</string>
+    <string name="workout_add_exercise">Agregar Ejercicio</string>
+    <string name="workout_finish">Finalizar Entreno</string>
+    <string name="workout_cancel">Cancelar</string>
+    <string name="workout_duration">Duración</string>
+    <string name="workout_sets">Series</string>
+    <string name="workout_volume">Volumen</string>
+    <string name="workout_add_set">Agregar Serie</string>
+    <string name="workout_weight">Peso</string>
+    <string name="workout_reps">Reps</string>
+    <string name="workout_rpe">RPE</string>
+    <string name="workout_rest_timer">Temporizador</string>
+
+    <!-- Exercises Screen -->
+    <string name="exercises_title">Ejercicios</string>
+    <string name="exercises_search">Buscar ejercicios…</string>
+    <string name="exercises_no_found">No se encontraron ejercicios</string>
+    <string name="exercises_all">Todos</string>
+
+    <!-- Exercise Detail -->
+    <string name="exercise_pr">PR</string>
+    <string name="exercise_workouts">Entrenos</string>
+    <string name="exercise_history">Historial</string>
+    <string name="exercise_no_history">Sin historial</string>
+    <string name="exercise_complete_workout">Completa un entreno con este ejercicio</string>
+
+    <!-- Routines Screen -->
+    <string name="routines_title">Rutinas</string>
+    <string name="routines_create">Crear Rutina</string>
+    <string name="routines_no_routines">Sin rutinas</string>
+    <string name="routines_create_first">Crea tu primera rutina</string>
+    <string name="routines_exercises_count">%1$d ejercicios</string>
+    <string name="routines_start">Iniciar</string>
+    <string name="routines_edit">Editar</string>
+
+    <!-- Routine Editor -->
+    <string name="routine_new">Nueva Rutina</string>
+    <string name="routine_edit">Editar Rutina</string>
+    <string name="routine_name">Nombre de la Rutina</string>
+    <string name="routine_add_exercise">Agregar Ejercicio</string>
+    <string name="routine_save">Guardar</string>
+    <string name="routine_delete">Eliminar</string>
+    <string name="routine_no_exercises">Sin ejercicios agregados</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_language">Idioma</string>
+    <string name="settings_weight_unit">Unidad de Peso</string>
+
+    <!-- Workout Detail -->
+    <string name="workout_detail_duration">Duración</string>
+    <string name="workout_detail_volume">Volumen</string>
+    <string name="workout_detail_sets">Series</string>
+    <string name="workout_detail_exercises">Ejercicios</string>
+    <string name="workout_detail_notes">Notas</string>
+    <string name="workout_detail_set">SERIE</string>
+
+    <!-- Common -->
+    <string name="back">Atrás</string>
+    <string name="save">Guardar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="delete">Eliminar</string>
+    <string name="confirm">Confirmar</string>
+
+    <!-- Categories -->
+    <string name="category_push">Empuje</string>
+    <string name="category_pull">Tirón</string>
+    <string name="category_legs">Piernas</string>
+    <string name="category_core">Core</string>
+    <string name="category_cardio">Cardio</string>
+</resources>

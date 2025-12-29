@@ -1,4 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">GymTracker</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_workout">Workout</string>
+    <string name="nav_routines">Routines</string>
+    <string name="nav_exercises">Exercises</string>
+
+    <!-- Home Screen -->
+    <string name="home_title">Workouts</string>
+    <string name="home_start_workout">Start Workout</string>
+    <string name="home_new_session">New session</string>
+    <string name="home_continue_session">Continue Session</string>
+    <string name="home_tap_to_resume">Tap to resume</string>
+    <string name="home_workouts">Workouts</string>
+    <string name="home_this_week">This week</string>
+    <string name="home_volume_lifted">Volume lifted</string>
+    <string name="home_last_7_days">Last 7 days</string>
+    <string name="home_recent">Recent</string>
+    <string name="home_minutes">%1$d minutes</string>
+    <string name="home_min">%1$dmin</string>
+
+    <!-- Workout Screen -->
+    <string name="workout_title">Workout</string>
+    <string name="workout_no_active">No active workout</string>
+    <string name="workout_start_new">Start a new workout</string>
+    <string name="workout_add_exercise">Add Exercise</string>
+    <string name="workout_finish">Finish Workout</string>
+    <string name="workout_cancel">Cancel</string>
+    <string name="workout_duration">Duration</string>
+    <string name="workout_sets">Sets</string>
+    <string name="workout_volume">Volume</string>
+    <string name="workout_add_set">Add Set</string>
+    <string name="workout_weight">Weight</string>
+    <string name="workout_reps">Reps</string>
+    <string name="workout_rpe">RPE</string>
+    <string name="workout_rest_timer">Rest Timer</string>
+
+    <!-- Exercises Screen -->
+    <string name="exercises_title">Exercises</string>
+    <string name="exercises_search">Search exercises…</string>
+    <string name="exercises_no_found">No exercises found</string>
+    <string name="exercises_all">All</string>
+
+    <!-- Exercise Detail -->
+    <string name="exercise_pr">PR</string>
+    <string name="exercise_workouts">Workouts</string>
+    <string name="exercise_history">History</string>
+    <string name="exercise_no_history">No history yet</string>
+    <string name="exercise_complete_workout">Complete a workout with this exercise</string>
+
+    <!-- Routines Screen -->
+    <string name="routines_title">Routines</string>
+    <string name="routines_create">Create Routine</string>
+    <string name="routines_no_routines">No routines yet</string>
+    <string name="routines_create_first">Create your first routine</string>
+    <string name="routines_exercises_count">%1$d exercises</string>
+    <string name="routines_start">Start</string>
+    <string name="routines_edit">Edit</string>
+
+    <!-- Routine Editor -->
+    <string name="routine_new">New Routine</string>
+    <string name="routine_edit">Edit Routine</string>
+    <string name="routine_name">Routine Name</string>
+    <string name="routine_add_exercise">Add Exercise</string>
+    <string name="routine_save">Save</string>
+    <string name="routine_delete">Delete</string>
+    <string name="routine_no_exercises">No exercises added</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_weight_unit">Weight Unit</string>
+
+    <!-- Workout Detail -->
+    <string name="workout_detail_duration">Duration</string>
+    <string name="workout_detail_volume">Volume</string>
+    <string name="workout_detail_sets">Sets</string>
+    <string name="workout_detail_exercises">Exercises</string>
+    <string name="workout_detail_notes">Notes</string>
+    <string name="workout_detail_set">SET</string>
+
+    <!-- Common -->
+    <string name="back">Back</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="confirm">Confirm</string>
+
+    <!-- Categories -->
+    <string name="category_push">Push</string>
+    <string name="category_pull">Pull</string>
+    <string name="category_legs">Legs</string>
+    <string name="category_core">Core</string>
+    <string name="category_cardio">Cardio</string>
 </resources>
